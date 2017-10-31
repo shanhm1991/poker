@@ -54,58 +54,6 @@ public class Common {
 		}
 	}
 
-	//检查牌的是否能出
-	public static int checkCards(List<CardLabel> c,List<CardLabel>[] current){
-		//找出当前最大的牌是哪个电脑出的,c是点选的牌
-		List<CardLabel> currentlist=(current[0].size()>0)?current[0]:current[2];
-		
-		int cType=CardType.getType(c);
-		//如果张数不同直接过滤
-		if(cType!=CardType.T4&&c.size()!=currentlist.size())
-			return 0;
-		//比较我的出牌类型
-		if(CardType.getType(c)!= CardType.getType(currentlist))
-		{
-
-			return 0;
-		}
-		//比较出的牌是否要大
-		//王炸弹
-		if(cType==CardType.T4)
-		{
-			if(c.size()==2)
-				return 1;
-			if(currentlist.size()==2)
-				return 0;
-		}
-		//单牌,对子,3带,4炸弹
-		if(cType==CardType.T1||cType==CardType.T2||cType==CardType.T3||cType==CardType.T4){
-			if(c.get(0).getValue() <= currentlist.get(0).getValue())
-			{
-				return 0;
-			}else {
-				return 1;
-			}
-		}
-		//顺子,连队，飞机裸
-		if(cType==CardType.T123||cType==CardType.T1122||cType==CardType.T111222)
-		{
-			if(c.get(0).getValue() <= currentlist.get(0).getValue())
-				return 0;
-			else 
-				return 1;
-		}
-		//按重复多少排序
-		//3带1,3带2 ,飞机带单，双,4带1,2,只需比较第一个就行，独一无二的 
-		if(cType==CardType.T31||cType==CardType.T32||cType==CardType.T411||cType==CardType.T422
-				||cType==CardType.T11122234||cType==CardType.T1112223344){
-			List<CardLabel> a1=Common.getOrder2(c); //我出的牌
-			List<CardLabel> a2=Common.getOrder2(currentlist);//当前最大牌
-			if(a1.get(0).getValue() < a2.get(0).getValue())
-				return 0;
-		}
-		return 1;
-	}
 	//按照重复次数排序
 	public static List getOrder2(List<CardLabel> list){
 		List<CardLabel> list2=new ArrayList<CardLabel>(list);

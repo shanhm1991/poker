@@ -109,14 +109,9 @@ public class CardType {
 
 		//5张：3带2、顺子
 		if(len == 5){
-
 			for(CardLabel card : list){
 
 			}
-
-
-			//			Map<>
-
 		}
 
 		//当5张以上时，顺子，3带2，飞机，2顺，4带2等等

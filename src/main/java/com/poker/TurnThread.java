@@ -7,12 +7,12 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-public class Time extends Thread {
+public class TurnThread extends Thread {
 	MainFrame main;
 	boolean isRun = true;
 	int i = 10;
 
-	public Time(MainFrame m, int i) {
+	public TurnThread(MainFrame m, int i) {
 		this.main = m;
 		this.i = i;
 	}
@@ -24,17 +24,21 @@ public class Time extends Thread {
 			main.getPlayer().getTimeFiled().setText("倒计时:" + i--);
 			second(1);
 		}
-		if (i == -1)// 正常终结，说明超时
+		if (i == -1){
 			main.getPlayer().getTimeFiled().setText("不抢");
+		}
 
 		main.getCompeteButton().setVisible(false);
 		main.getNotCompeteButton().setVisible(false);
 
 		CardPlayer player = main.getPlayer();
-
-		//		List<CardLabel> myList = main.getMePlayer().getCardList();
-		for (CardLabel card : player.getCardList())
+		CardPlayer leftConputer = main.getLeftConputer();
+		CardPlayer rightConputer = main.getRightConputer();
+		for (CardLabel card : player.getCardList()){
 			card.setClickable(true);
+		}
+			
+		Point point = null;
 		if (main.getPlayer().getTimeFiled().getText().equals("抢地主")) {
 			// 得到地主牌
 			player.getCardList().addAll(main.lordList);
@@ -42,49 +46,54 @@ public class Time extends Thread {
 			second(2);// 等待五秒
 			player.order();
 			player.resetPosition();
-			setlord(1);
+			point = player.getPoint();
+			player.setDizhu(true);
+			main.setDizhuPosition(CardPlayer.POSITION_PLAYER);
 		} else {
-			CardPlayer leftConputer = main.getLeftConputer();
-			CardPlayer rightConputer = main.getRightConputer();
 			if (leftConputer.getScore() < rightConputer.getScore()) {
 				main.getRightConputer().getTimeFiled().setText("抢地主");
 				main.getRightConputer().getTimeFiled().setVisible(true);
-				setlord(2);// 设定地主
 				openlord(true);
 				second(3);
+				point = rightConputer.getPoint();
+				rightConputer.setDizhu(true); 
 				rightConputer.getCardList().addAll(main.lordList);
 				rightConputer.order();
 				rightConputer.resetPosition();
 				openlord(false);
+				main.setDizhuPosition(CardPlayer.POSITION_RIGHT);
 			} else {
 				main.getLeftConputer().getTimeFiled().setText("抢地主");
 				main.getLeftConputer().getTimeFiled().setVisible(true);
-				setlord(0);// 设定地主
 				openlord(true);
 				second(3);
+				leftConputer.setDizhu(true); 
+				point = leftConputer.getPoint();
 				leftConputer.getCardList().addAll(main.lordList);
 				leftConputer.order();
 				leftConputer.resetPosition();
+				main.setDizhuPosition(CardPlayer.POSITION_LEFT);
 				//openlord(false);
 			}
 		}
-		// 选完地主后 关闭地主按钮
-		//		main.getLandlord()[0].setVisible(false);
-		//		main.getLandlord()[1].setVisible(false);
+		
+		main.getDizhuLabel().setLocation(point);
+		main.getDizhuLabel().setVisible(true);
 
 		main.getCompeteButton().setVisible(false);
 		main.getNotCompeteButton().setVisible(false);
 
 		turnOn(false);
+		
 		main.getPlayer().getTimeFiled().setText("不要");
 		main.getPlayer().getTimeFiled().setVisible(false);
 		main.getLeftConputer().getTimeFiled().setText("不要");
 		main.getLeftConputer().getTimeFiled().setVisible(false);
 		main.getRightConputer().getTimeFiled().setText("不要");
 		main.getRightConputer().getTimeFiled().setVisible(false);
-		
+
 		// 开始游戏 根据地主不同顺序不同
-		main.setTurn(main.getDizhuFlag());  
+		main.setTurn(main.getDizhuPosition());  
 
 		while (true) {
 			if(main.getTurn()==1) {
@@ -134,29 +143,6 @@ public class Time extends Thread {
 		}
 	}
 
-	// 设定地主
-	public void setlord(int i) {
-		Point point = new Point();
-		if (i == 1)// 我是地主
-		{
-			point.x = 80;
-			point.y = 430;
-			main.setDizhuFlag(1);// 设定地主
-		}
-		if (i == 0) {
-			point.x = 80;
-			point.y = 20;
-			main.setDizhuFlag(0);
-		}
-		if (i == 2) {
-			point.x = 700;
-			point.y = 20;
-			main.setDizhuFlag(2);
-		}
-		main.getDizhu().setLocation(point);
-		main.getDizhu().setVisible(true);
-	}
-
 	// 打开出牌按钮
 	public void turnOn(boolean flag) {
 		main.getPublishButton().setVisible(flag);
@@ -178,17 +164,15 @@ public class Time extends Thread {
 	}
 
 	// 走牌
-	public void ShowCard(int role) {
-		CardPlayer player1 = main.getPlayer(role);
-
-		Model model = Common.getModel(player1.getCardList());
-		
+	public void ShowCard(int position) {
+		CardPlayer player = main.getPlayer(position);
+		Model model = Common.getModel(player.getCardList());
 		// 待走的牌
 		List<String> list = new ArrayList();
-		
+
 		// 主动出牌
-		if (main.getPlayer((role + 1) % 3).getTimeFiled().getText().equals("不要")
-				&& main.getPlayer((role + 2) % 3).getTimeFiled().getText().equals("不要")) {
+		if (main.getPlayer((position + 1) % 3).getTimeFiled().getText().equals("不要")
+				&& main.getPlayer((position + 2) % 3).getTimeFiled().getText().equals("不要")) {
 			// 有单出单 (除开3带，飞机能带的单牌)
 			if (model.a1.size() > (model.a111222.size() * 2 + model.a3.size())) {
 				list.add(model.a1.get(model.a1.size() - 1));
@@ -249,95 +233,98 @@ public class Time extends Thread {
 			}
 		}// 如果是跟牌
 		else {
-			List<CardLabel> player = main.getCurrentList()[(role + 2) % 3].size() > 0 
-					? main.getCurrentList()[(role + 2) % 3]
-							: main.getCurrentList()[(role + 1) % 3];
+			CardPlayer prePlayer = main.getPlayer((position + 2) % 3);
+			CardPlayer nextPlayer = main.getPlayer((position + 1) % 3);
+			List<CardLabel> cardList = prePlayer.getCurrentList();
+			if(cardList.isEmpty()){
+				cardList = nextPlayer.getCurrentList();
+			}
 
-					int cType=CardType.getType(player);
-					//如果是单牌
-					if(cType==CardType.T1)
-					{
-						AI_1(model.a1, player, list, role);
-					}//如果是对子
-					else if(cType==CardType.T2)
-					{
-						AI_1(model.a2, player, list, role);
-					}//3带
-					else if(cType==CardType.T3)
-					{
-						AI_1(model.a3, player, list, role);
-					}//炸弹
-					else if(cType==CardType.T4)
-					{
-						AI_1(model.a4, player, list, role);
-					}//如果是3带1
-					else if(cType==CardType.T31){
-						//偏家 涉及到拆牌
-						//if((role+1)%3==main.dizhuFlag)
-						AI_2(model.a3, model.a1, player, list, role);
-					}//如果是3带2
-					else if(cType==CardType.T32){
-						//偏家
-						//if((role+1)%3==main.dizhuFlag)
-						AI_2(model.a3, model.a2, player, list, role);
-					}//如果是4带11
-					else if(cType==CardType.T411){
-						AI_5(model.a4, model.a1, player, list, role);
-					}
-					//如果是4带22
-					else if(cType==CardType.T422){
-						AI_5(model.a4, model.a2, player, list, role);
-					}
-					//顺子
-					else if(cType==CardType.T123){
-						AI_3(model.a123, player, list, role);
-					}
-					//双顺
-					else if(cType==CardType.T1122){
-						AI_3(model.a112233, player, list, role);
-					}
-					//飞机带单
-					else if(cType==CardType.T11122234){
-						AI_4(model.a111222,model.a1, player, list, role);
-					}
-					//飞机带对
-					else if(cType==CardType.T1112223344){
-						AI_4(model.a111222,model.a2, player, list, role);
-					}
-					//炸弹
-					if(list.size()==0)
-					{
-						int len4=model.a4.size();
-						if(len4>0)
-							list.add(model.a4.get(len4-1));
-					}
+			int cType=CardType.getType(cardList);
+			//如果是单牌
+			if(cType==CardType.T1)
+			{
+				AI_1(model.a1, cardList, list, position);
+			}//如果是对子
+			else if(cType==CardType.T2)
+			{
+				AI_1(model.a2, cardList, list, position);
+			}//3带
+			else if(cType==CardType.T3)
+			{
+				AI_1(model.a3, cardList, list, position);
+			}//炸弹
+			else if(cType==CardType.T4)
+			{
+				AI_1(model.a4, cardList, list, position);
+			}//如果是3带1
+			else if(cType==CardType.T31){
+				//偏家 涉及到拆牌
+				//if((role+1)%3==main.dizhuFlag)
+				AI_2(model.a3, model.a1, cardList, list);
+			}//如果是3带2
+			else if(cType==CardType.T32){
+				//偏家
+				//if((role+1)%3==main.dizhuFlag)
+				AI_2(model.a3, model.a2, cardList, list);
+			}//如果是4带11
+			else if(cType==CardType.T411){
+				AI_5(model.a4, model.a1, cardList, list, position);
+			}
+			//如果是4带22
+			else if(cType==CardType.T422){
+				AI_5(model.a4, model.a2, cardList, list, position);
+			}
+			//顺子
+			else if(cType==CardType.T123){
+				AI_3(model.a123, cardList, list, position);
+			}
+			//双顺
+			else if(cType==CardType.T1122){
+				AI_3(model.a112233, cardList, list, position);
+			}
+			//飞机带单
+			else if(cType==CardType.T11122234){
+				AI_4(model.a111222,model.a1, cardList, list, position);
+			}
+			//飞机带对
+			else if(cType==CardType.T1112223344){
+				AI_4(model.a111222,model.a2, cardList, list, position);
+			}
+			//炸弹
+			if(list.size()==0)
+			{
+				int len4=model.a4.size();
+				if(len4>0)
+					list.add(model.a4.get(len4-1));
+			}
 		}
 
 		// 定位出牌
-		main.getCurrentList()[role].clear();
+		player.getCurrentList().clear();
 		if (list.size() > 0) {
 			Point point = new Point();
-			if (role == 0)
+			if (position == 0)
 				point.x = 200;
-			if (role == 2)
+			if (position == 2)
 				point.x = 550;
 			point.y = (400 / 2) - (list.size() + 1) * 15 / 2;// 屏幕中部
 			// 将name转换成Card
 			for (int i = 0, len = list.size(); i < len; i++) {
-				List<CardLabel> cards = getCardByName(player1.getCardList(),list.get(i));
+				List<CardLabel> cards = getCardByName(player.getCardList(),list.get(i));
 				for (CardLabel card : cards) {
 					card.move(point);
 					point.y += 15;
-					main.getCurrentList()[role].add(card);
-					player1.getCardList().remove(card);
+					player.getCurrentList().add(card);
+					player.getCardList().remove(card);
 				}
 			}
-			player1.resetPosition();
+			player.resetPosition();
 		} else {
-			main.getPlayer(role).getTimeFiled().setVisible(true);
-			main.getPlayer(role).getTimeFiled().setText("不要");
+			main.getPlayer(position).getTimeFiled().setVisible(true);
+			main.getPlayer(position).getTimeFiled().setText("不要");
 		}
-		for(CardLabel card:main.getCurrentList()[role])
+		for(CardLabel card : player.getCurrentList())//TODO
 			card.turnUp();
 	}
 
@@ -407,25 +394,18 @@ public class Time extends Thread {
 		}
 	}
 	//单牌，对子，3个，4个,通用
-	public void AI_1(List<String> model,List<CardLabel> player,List<String> list,int role){
+	public void AI_1(List<String> model,List<CardLabel> player,List<String> list,int position){
 		//顶家
-		if((role+1)%3==main.getDizhuFlag())
-		{
-
-			for(int i=0,len=model.size();i<len;i++)
-			{
-				if(getValueInt(model.get(i)) > player.get(0).getValue())
-				{
+		if((position+1)%3 == main.getDizhuPosition()){
+			for(int i=0,len=model.size();i<len;i++){
+				if(getValueInt(model.get(i)) > player.get(0).getValue()){
 					list.add(model.get(i));
 					break;
 				}
 			}
 		}else {//偏家
-
-			for(int len=model.size(),i=len-1;i>=0;i--)
-			{
-				if(getValueInt(model.get(i)) > player.get(0).getValue())
-				{
+			for(int len=model.size(),i=len-1;i>=0;i--){
+				if(getValueInt(model.get(i)) > player.get(0).getValue()){
 					list.add(model.get(i));
 					break;
 				}
@@ -433,7 +413,7 @@ public class Time extends Thread {
 		}
 	}
 	//3带1,2,4带1,2
-	public void AI_2(List<String> model1,List<String> model2,List<CardLabel> player,List<String> list,int role){
+	public void AI_2(List<String> model1,List<String> model2,List<CardLabel> player,List<String> list){
 		//model1是主牌,model2是带牌,player是玩家出的牌,,list是准备回的牌
 		//排序按重复数
 		player=Common.getOrder2(player);
@@ -461,37 +441,36 @@ public class Time extends Thread {
 			list.clear();
 	}
 	// 延时，模拟时钟
-	public void timeWait(int n, int player) {
-		
-		System.out.println(main == null);
+	public void timeWait(int n, int role) {
+		List<CardLabel> cardList = main.getPlayer(role).getCurrentList();
 
-		if (main.getCurrentList()[player].size() > 0)
-			Common.hideCards(main.getCurrentList()[player]);
-		if (player == 1)// 如果是我，10秒到后直接下一家出牌
+		if (cardList.size() > 0)
+			Common.hideCards(cardList);
+		if (role == 1)// 如果是我，10秒到后直接下一家出牌
 		{
 			int i = n;
 
 			while (main.nextPlayer == false && i >= 0) {
 				// main.container.setComponentZOrder(main.time[player], 0);
-				
-				main.getPlayer(player).getTimeFiled().setText("倒计时:" + i);
-				main.getPlayer(player).getTimeFiled().setVisible(true);
+
+				main.getPlayer(role).getTimeFiled().setText("倒计时:" + i);
+				main.getPlayer(role).getTimeFiled().setVisible(true);
 				second(1);
 				i--;
 			}
 			if (i == -1) {
-				main.getPlayer(player).getTimeFiled().setText("超时");
+				main.getPlayer(role).getTimeFiled().setText("超时");
 			}
 			main.nextPlayer = false;
 		} else {
 			for (int i = n; i >= 0; i--) {
 				second(1);
 				// main.container.setComponentZOrder(main.time[player], 0);
-				main.getPlayer(player).getTimeFiled().setText("倒计时:" + i);
-				main.getPlayer(player).getTimeFiled().setVisible(true);
+				main.getPlayer(role).getTimeFiled().setText("倒计时:" + i);
+				main.getPlayer(role).getTimeFiled().setVisible(true);
 			}
 		}
-		main.getPlayer(player).getTimeFiled().setVisible(false);
+		main.getPlayer(role).getTimeFiled().setVisible(false);
 	}
 	//通过name估值
 	public  int getValueInt(String n){
@@ -507,20 +486,20 @@ public class Time extends Thread {
 
 	//判断输赢
 	public boolean win(){
-//		for(int i=0;i<3;i++){
-//			if(main.playerList[i].size()==0)
-//			{
-//				String s;
-//				if(i==1)
-//				{
-//					s="恭喜你，胜利了!";
-//				}else {
-//					s="恭喜电脑"+i+",赢了! 你的智商有待提高哦";
-//				}
-//				JOptionPane.showMessageDialog(main, s);
-//				return true;
-//			}
-//		}
+		//		for(int i=0;i<3;i++){
+		//			if(main.playerList[i].size()==0)
+		//			{
+		//				String s;
+		//				if(i==1)
+		//				{
+		//					s="恭喜你，胜利了!";
+		//				}else {
+		//					s="恭喜电脑"+i+",赢了! 你的智商有待提高哦";
+		//				}
+		//				JOptionPane.showMessageDialog(main, s);
+		//				return true;
+		//			}
+		//		}
 		return false;
 	}
 }

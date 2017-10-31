@@ -43,27 +43,25 @@ public class MainFrame extends JFrame {
 	private JButton publishButton;
 
 	private JButton notPublishButton;
-
-	private int dizhuFlag;//地主标志
+	
+	private JLabel dizhuLabel; 
 
 	private int turn;
-
-	private JLabel dizhu; //地主图标
-
-	private List<CardLabel> currentList[] = new ArrayList[3]; 
+	
+	private int dizhuPosition;
 
 	private CardPlayer player;
-	
+
 	private CardPlayer leftConputer;
 
 	private CardPlayer rightConputer;
 
-	List<CardLabel> lordList;//地主牌
+	List<CardLabel> lordList;
 
 	CardLabel card[] = new CardLabel[56]; 
 
-	Time t; //定时器（线程）
-	
+	TurnThread turnThread; 
+
 	boolean nextPlayer=false; //转换角色
 
 	public MainFrame(){
@@ -76,11 +74,10 @@ public class MainFrame extends JFrame {
 
 		init();
 
-		CardInit();
-
-		completeLord();
+		initCard();
 
 		player.getTimeFiled().setVisible(true);
+		
 		//线程安全性,把非主线程的UI控制放到里面
 		SwingUtilities.invokeLater(new NewTimer(this,10));
 	}
@@ -131,7 +128,7 @@ public class MainFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				player.getTimeFiled().setText("抢地主");
-				t.isRun=false; 
+				turnThread.isRun=false; 
 			}
 		});
 		container.add(competeButton);
@@ -143,7 +140,7 @@ public class MainFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				player.getTimeFiled().setText("不抢");
-				t.isRun=false; 
+				turnThread.isRun=false; 
 			}
 		});
 		container.add(notCompeteButton);
@@ -170,31 +167,20 @@ public class MainFrame extends JFrame {
 		});
 		container.add(notPublishButton);
 
-		dizhu=new JLabel(new ImageIcon("images/dizhu.gif"));
-		dizhu.setVisible(false);
-		dizhu.setSize(40, 40);
-		container.add(dizhu);
-		
-		for(int i=0;i<3;i++){
-			currentList[i] = new ArrayList<CardLabel>();
-		}
-		
-		player = new CardPlayer(this,CardPlayer.ROLE_PLAYER);
-		leftConputer = new CardPlayer(this,CardPlayer.ROLE_LEFT);
-		rightConputer = new CardPlayer(this,CardPlayer.ROLE_RIGHT);
+		dizhuLabel=new JLabel(new ImageIcon("images/dizhu.gif"));
+		dizhuLabel.setVisible(false);
+		dizhuLabel.setSize(40, 40);
+		container.add(dizhuLabel);
+
+		player = new CardPlayer(this,CardPlayer.POSITION_PLAYER);
+		leftConputer = new CardPlayer(this,CardPlayer.POSITION_LEFT);
+		rightConputer = new CardPlayer(this,CardPlayer.POSITION_RIGHT);
 	}
 
 	/**
-	 * 抢地主
+	 * 发牌
 	 */
-	public void completeLord(){
-		competeButton.setVisible(true);
-		notCompeteButton.setVisible(true);
-	}
-
-	// 发牌
-	public void CardInit() {
-
+	public void initCard() {
 		int count = 1;
 		//初始化牌
 		for (int i = 1; i <= 5; i++) {
@@ -227,7 +213,7 @@ public class MainFrame extends JFrame {
 				lordList.add(card[i]);
 				continue;
 			}
-			
+
 			switch ((t++)%3) {
 			case 0:
 				card[i].move(new Point(50,60+i*5));
@@ -254,6 +240,9 @@ public class MainFrame extends JFrame {
 		leftConputer.resetPosition();
 		rightConputer.resetPosition();
 		player.resetPosition();
+		
+		competeButton.setVisible(true);
+		notCompeteButton.setVisible(true);
 	}
 
 	private void playPublish(){
@@ -272,23 +261,22 @@ public class MainFrame extends JFrame {
 			if(CardType.getType(publishCards)!=CardType.T0)
 				flag=1;//表示可以出牌
 		}else{
-			flag=Common.checkCards(publishCards,currentList);
+			flag=checkCards(publishCards);
 		}
-		
+
 		//判断是否符合出牌
 		if(flag==1){
-			currentList[1]=publishCards;
-			player.getCardList().removeAll(currentList[1]);//移除走的牌
+			player.setCurrentList(publishCards);
+			player.getCardList().removeAll(publishCards);//移除走的牌
 
-			//定位出牌
 			Point point=new Point();
-			point.x=(770/2)-(currentList[1].size()+1)*15/2;;
+			point.x=(770/2)-(publishCards.size()+1)*15/2;;
 			point.y=300;
-			for(int i=0,len=currentList[1].size();i<len;i++){
-				currentList[1].get(i).move(point);
+			for(int i=0,len=publishCards.size();i<len;i++){
+				publishCards.get(i).move(point);
 				point.x+=15;
 			}
-			
+
 			player.resetPosition();
 			player.getTimeFiled().setVisible(false);
 			this.nextPlayer=true;
@@ -297,21 +285,77 @@ public class MainFrame extends JFrame {
 
 	private void notPublish(){
 		nextPlayer=true;
-		currentList[1].clear();
+		player.getCurrentList().clear();
 		player.getTimeFiled().setText("不要");
+	}
+
+	//检查牌的是否能出
+	private  int checkCards(List<CardLabel> c){
+		//找出当前最大的牌是哪个电脑出的,c是点选的牌
+		List<CardLabel> currentlist = leftConputer.getCurrentList();
+		if(currentlist.isEmpty()){
+			currentlist = rightConputer.getCurrentList();
+		}
+				
+		int cType=CardType.getType(c);
+		//如果张数不同直接过滤
+		if(cType!=CardType.T4&&c.size()!=currentlist.size())
+			return 0;
+		//比较我的出牌类型
+		if(CardType.getType(c)!= CardType.getType(currentlist))
+		{
+
+			return 0;
+		}
+		//比较出的牌是否要大
+		//王炸弹
+		if(cType==CardType.T4)
+		{
+			if(c.size()==2)
+				return 1;
+			if(currentlist.size()==2)
+				return 0;
+		}
+		//单牌,对子,3带,4炸弹
+		if(cType==CardType.T1||cType==CardType.T2||cType==CardType.T3||cType==CardType.T4){
+			if(c.get(0).getValue() <= currentlist.get(0).getValue())
+			{
+				return 0;
+			}else {
+				return 1;
+			}
+		}
+		//顺子,连队，飞机裸
+		if(cType==CardType.T123||cType==CardType.T1122||cType==CardType.T111222)
+		{
+			if(c.get(0).getValue() <= currentlist.get(0).getValue())
+				return 0;
+			else 
+				return 1;
+		}
+		//按重复多少排序
+		//3带1,3带2 ,飞机带单，双,4带1,2,只需比较第一个就行，独一无二的 
+		if(cType==CardType.T31||cType==CardType.T32||cType==CardType.T411||cType==CardType.T422
+				||cType==CardType.T11122234||cType==CardType.T1112223344){
+			List<CardLabel> a1=Common.getOrder2(c); //我出的牌
+			List<CardLabel> a2=Common.getOrder2(currentlist);//当前最大牌
+			if(a1.get(0).getValue() < a2.get(0).getValue())
+				return 0;
+		}
+		return 1;
 	}
 
 	private void showAbout(){
 		JOptionPane.showMessageDialog(this, "version 1.0  by牧风-shanhm1991@163.com");
 	}
-	
+
 	public CardPlayer getPlayer(int role){
 		switch(role){
-		case CardPlayer.ROLE_LEFT:
+		case CardPlayer.POSITION_LEFT:
 			return leftConputer;
-		case CardPlayer.ROLE_PLAYER:
+		case CardPlayer.POSITION_PLAYER:
 			return player;
-		case CardPlayer.ROLE_RIGHT:
+		case CardPlayer.POSITION_RIGHT:
 			return rightConputer;
 		default:
 			return null;
@@ -339,9 +383,8 @@ class NewTimer implements Runnable{
 	}
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		main.t=new Time(main,10);//从10开始倒计时
-		main.t.start();
+		main.turnThread=new TurnThread(main,10);
+		main.turnThread.start();
 	}
 
 }

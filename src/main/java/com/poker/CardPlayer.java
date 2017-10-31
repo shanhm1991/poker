@@ -14,53 +14,60 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(of = {"role"},callSuper = false)
 public class CardPlayer {
-	
+
 	/**
 	 * 左手电脑
 	 */
-	public static final int ROLE_LEFT = 0;
-	
+	public static final int POSITION_LEFT = 0;
+
 	/**
 	 * 玩家
 	 */
-	public static final int ROLE_PLAYER = 1;
-	
+	public static final int POSITION_PLAYER = 1;
+
 	/**
 	 * 右手电脑
 	 */
-	public static final int ROLE_RIGHT = 2;
+	public static final int POSITION_RIGHT = 2;
 
-	private Integer role;
-	
-	private MainFrame frame;
-	
-	private JTextField timeFiled;
-	
 	private List<CardLabel> cardList = new ArrayList<CardLabel>();
 
 	private List<CardLabel> currentList = new ArrayList<CardLabel>();
 	
-	
+	private Point point;
+
+	private Integer position;
+
+	private MainFrame frame;
+
+	private boolean dizhu;
+
+	private JTextField timeFiled;
+
+
 	public CardPlayer(MainFrame frame, int role){
-		this.role = role;
+		this.position = role;
 		this.frame = frame;
 		timeFiled = new JTextField("倒计时:");
 		timeFiled.setVisible(false);
 		switch(role){
-		case ROLE_LEFT:
+		case POSITION_LEFT:
+			point = new Point(80,20);
 			timeFiled.setBounds(140, 230, 60, 20);
 			break;
-		case ROLE_PLAYER:
+		case POSITION_PLAYER:
+			point = new Point(80,430);
 			timeFiled.setBounds(374, 360, 60, 20);
 			break;
-		case ROLE_RIGHT:
+		case POSITION_RIGHT:
+			point = new Point(700,20);
 			timeFiled.setBounds(620, 230, 60, 20);
 			break;
 		default:;
 		}
 		frame.container.add(timeFiled);
 	}
-	
+
 	public  void order(){
 		Collections.sort(cardList,new Comparator<CardLabel>() {
 			@Override
@@ -89,19 +96,19 @@ public class CardPlayer {
 			}
 		});
 	}
-	
+
 	public void resetPosition(){
 		Point point=new Point();
-		switch(role){
-		case ROLE_LEFT:
+		switch(position){
+		case POSITION_LEFT:
 			point.x=50;
 			point.y=(450/2)-(cardList.size()+1)*15/2;
 			break;
-		case ROLE_PLAYER:
+		case POSITION_PLAYER:
 			point.x=(800/2)-(cardList.size()+1)*21/2;
 			point.y=450;
 			break;
-		case ROLE_RIGHT:
+		case POSITION_RIGHT:
 			point.x=700;
 			point.y=(450/2)-(cardList.size()+1)*15/2;
 			break;
@@ -112,11 +119,11 @@ public class CardPlayer {
 			CardLabel card=cardList.get(i);
 			card.move(point);
 			frame.container.setComponentZOrder(card, 0);
-			if(role==1)point.x+=21;
+			if(position==1)point.x+=21;
 			else point.y+=15;
 		}
 	}
-	
+
 	public int getScore(){
 		int score=0;
 		for(int i=0,len=cardList.size();i<len;i++){
