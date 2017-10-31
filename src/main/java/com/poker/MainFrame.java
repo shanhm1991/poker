@@ -25,40 +25,44 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class Main extends JFrame implements ActionListener {
+public class MainFrame extends JFrame implements ActionListener {
+
+	private static final long serialVersionUID = -2875228669172807387L;
 
 	public Container container = null;// 定义容器
-	
+
 	private JMenuItem start;
-	
+
 	private JMenuItem exit;
-	
+
 	private JMenuItem about;// 定义菜单按钮
-	
+
 	private JButton landlord[]=new JButton[2];//抢地主按钮
-	
+
 	private JButton publishCard[]=new JButton[2];//出牌按钮
-	
-	int dizhuFlag;//地主标志
-	int turn;
-	JLabel dizhu; //地主图标
-	
+
+	private int dizhuFlag;//地主标志
+
+	private int turn;
+
+	private JLabel dizhu; //地主图标
+
 	/**
 	 * 当前的出牌
 	 */
-	private List<Card> currentList[] = new ArrayList[3]; 
-	
+	private List<CardLabel> currentList[] = new ArrayList[3]; 
+
 	/**
 	 * 定义3个玩家表
 	 */
-	List<Card> playerList[] = new ArrayList[3];  
-	
-	List<Card> lordList;//地主牌
-	Card card[] = new Card[56]; // 定义54张牌
+	List<CardLabel> playerList[] = new ArrayList[3];  
+
+	List<CardLabel> lordList;//地主牌
+	CardLabel card[] = new CardLabel[56]; // 定义54张牌
 	JTextField time[]=new JTextField[3]; //计时器
 	Time t; //定时器（线程）
 	boolean nextPlayer=false; //转换角色
-	public Main(){
+	public MainFrame(){
 
 		Init();// 初始化
 		SetMenu();// 创建菜单 按钮(抢地主，发牌,计时器)
@@ -68,7 +72,7 @@ public class Main extends JFrame implements ActionListener {
 		time[1].setVisible(true);
 		//线程安全性,把非主线程的UI控制放到里面
 		SwingUtilities.invokeLater(new NewTimer(this,10));
-		
+
 	}
 	// 抢地主
 	public void getLord(){
@@ -79,7 +83,7 @@ public class Main extends JFrame implements ActionListener {
 	//初始化牌
 	// 发牌洗牌
 	public void CardInit() {
-		
+
 		int count = 1;
 		//初始化牌
 		for (int i = 1; i <= 5; i++) {
@@ -87,7 +91,7 @@ public class Main extends JFrame implements ActionListener {
 				if ((i == 5) && (j > 2))
 					break;
 				else {
-					card[count] = new Card(this, i + "-" + j, false);
+					card[count] = new CardLabel(this, i + "-" + j, false);
 					card[count].setLocation(350, 50);
 					container.add(card[count]);
 					count++;
@@ -99,38 +103,33 @@ public class Main extends JFrame implements ActionListener {
 			Random random=new Random();
 			int a=random.nextInt(54)+1;
 			int b=random.nextInt(54)+1;
-			Card k=card[a];
+			CardLabel k=card[a];
 			card[a]=card[b];
 			card[b]=k;
 		}
 		//开始发牌
 		for(int i=0;i<3;i++)
-			playerList[i]=new ArrayList<Card>(); //玩家牌
-		lordList=new ArrayList<Card>();//地主牌三张
+			playerList[i]=new ArrayList<CardLabel>(); //玩家牌
+		lordList=new ArrayList<CardLabel>();//地主牌三张
 		int t=0;
-		for(int i=1;i<=54;i++)
-		{
-			if(i>=52)//地主牌
-			{
-				Common.move(card[i], card[i].getLocation(),new Point(300+(i-52)*80,10));
+		for(int i=1;i<=54;i++){
+			if(i>=52){
+				card[i].move(new Point(300+(i-52)*80,10));
 				lordList.add(card[i]);
 				continue;
 			}
 			switch ((t++)%3) {
-			case 0:
-				//左边玩家
-				Common.move(card[i], card[i].getLocation(),new Point(50,60+i*5));
+			case 0://左手玩家
+				card[i].move(new Point(50,60+i*5));
 				playerList[0].add(card[i]);
 				break;
-			case 1:
-				//我
-				Common.move(card[i], card[i].getLocation(),new Point(180+i*7,450));
+			case 1://我
+				card[i].move(new Point(180+i*7,450));
 				playerList[1].add(card[i]);
-				card[i].turnFront(); //显示正面
+				card[i].turnUp(); //显示正面
 				break;
-			case 2:
-				//右边玩家
-				Common.move(card[i], card[i].getLocation(),new Point(700,60+i*5));
+			case 2://右手玩家
+				card[i].move(new Point(700,60+i*5));
 				playerList[2].add(card[i]);
 				break;
 			}
@@ -184,7 +183,7 @@ public class Main extends JFrame implements ActionListener {
 		jMenuBar.add(game);
 		jMenuBar.add(help);
 		this.setJMenuBar(jMenuBar);
-		
+
 		landlord[0]=new JButton("抢地主");
 		landlord[1]=new JButton("不     抢");
 		publishCard[0]= new JButton("出牌");
@@ -208,11 +207,11 @@ public class Main extends JFrame implements ActionListener {
 		time[0].setBounds(140, 230, 60, 20);
 		time[1].setBounds(374, 360, 60, 20);
 		time[2].setBounds(620, 230, 60, 20);
-		
+
 		for(int i=0;i<3;i++){
-			currentList[i]=new ArrayList<Card>();
+			currentList[i]=new ArrayList<CardLabel>();
 		}
-		
+
 	}
 
 	@Override
@@ -247,27 +246,25 @@ public class Main extends JFrame implements ActionListener {
 		//如果是出牌按钮
 		if(e.getSource()==publishCard[0])
 		{
-			List<Card> c=new ArrayList<Card>();
+			List<CardLabel> c=new ArrayList<CardLabel>();
 			//点选出牌
 			for(int i=0;i<playerList[1].size();i++)
 			{
-				Card card = playerList[1].get(i);
+				CardLabel card = playerList[1].get(i);
 				if(card.isClicked())
 				{
 					c.add(card);
 				}
 			}
 			int flag=0;
-			
-			//如果我主动出牌
-			if(time[0].getText().equals("不要")&&time[2].getText().equals("不要"))
-			{
-			
-				if(Common.jugdeType(c)!=CardType.c0)
+
+			//主动出牌
+			if(time[0].getText().equals("不要")&&time[2].getText().equals("不要")){
+				if(CardType.getType(c)!=CardType.T0)
 					flag=1;//表示可以出牌
-			}//如果我跟牌
-			else{
-			
+				//跟牌
+			}else{
+
 				flag=Common.checkCards(c,currentList);
 			}
 			//判断是否符合出牌
@@ -279,10 +276,8 @@ public class Main extends JFrame implements ActionListener {
 				Point point=new Point();
 				point.x=(770/2)-(currentList[1].size()+1)*15/2;;
 				point.y=300;
-				for(int i=0,len=currentList[1].size();i<len;i++)
-				{
-					Card card=currentList[1].get(i);
-					Common.move(card, card.getLocation(), point);
+				for(int i=0,len=currentList[1].size();i<len;i++){
+					currentList[1].get(i).move(point);
 					point.x+=15;
 				}
 				//抽完牌后重新整理牌
@@ -295,18 +290,18 @@ public class Main extends JFrame implements ActionListener {
 	}
 
 	public static void main(String args[]) {
-		
-			new Main();
-		
+
+		new MainFrame();
+
 	}
 
 }
 
 class NewTimer implements Runnable{
 
-	Main main;
+	MainFrame main;
 	int i;
-	public NewTimer(Main m,int i){
+	public NewTimer(MainFrame m,int i){
 		this.main=m;
 		this.i=i;
 	}
@@ -316,5 +311,5 @@ class NewTimer implements Runnable{
 		main.t=new Time(main,10);//从10开始倒计时
 		main.t.start();
 	}
-	
+
 }
