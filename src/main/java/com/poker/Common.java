@@ -1,90 +1,9 @@
 package com.poker;
 
-import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class Common {
-	//对list排序
-	public static void order(List<CardLabel> list){
-		Collections.sort(list,new Comparator<CardLabel>() {
-			@Override
-			public int compare(CardLabel o1, CardLabel o2) {
-				// TODO Auto-generated method stub
-				int a1=Integer.parseInt(o1.getName().substring(0, 1));//花色
-				int a2=Integer.parseInt(o2.getName().substring(0,1));
-				int b1=Integer.parseInt(o1.getName().substring(2,o1.getName().length()));//数值
-				int b2=Integer.parseInt(o2.getName().substring(2,o2.getName().length()));
-				int flag=0;
-				//如果是王的话
-				if(a1==5) b1+=100;
-				if(a1==5&&b1==1) b1+=50;
-				if(a2==5) b2+=100;
-				if(a2==5&&b2==1) b2+=50;
-				//如果是A或者2
-				if(b1==1) b1+=20;
-				if(b2==1) b2+=20;
-				if(b1==2) b1+=30;
-				if(b2==2) b2+=30;
-				flag=b2-b1;
-				if(flag==0)
-					return a2-a1;
-				else {
-					return flag;
-				}
-			}
-		});
-	}
-	//重新定位 flag代表电脑1 ,2 或者是我
-	public static void rePosition(MainFrame m,List<CardLabel> list,int flag){
-		Point p=new Point();
-		if(flag==0)
-		{
-			p.x=50;
-			p.y=(450/2)-(list.size()+1)*15/2;
-		}
-		if(flag==1)
-		{//我的排序 _y=450 width=830
-			p.x=(800/2)-(list.size()+1)*21/2;
-			p.y=450;
-		}
-		if(flag==2)
-		{
-			p.x=700;
-			p.y=(450/2)-(list.size()+1)*15/2;
-		}
-		int len=list.size();
-		for(int i=0;i<len;i++){
-			CardLabel card=list.get(i);
-			card.move(p);
-			m.container.setComponentZOrder(card, 0);
-			if(flag==1)p.x+=21;
-			else p.y+=15;
-
-		}
-	}
-	//地主牌权值，看是否抢地主
-	public static int getScore(List<CardLabel> list){
-		int count=0;
-		for(int i=0,len=list.size();i<len;i++){
-			CardLabel card=list.get(i);
-			if(card.getName().substring(0, 1).equals("5"))
-			{
-				//System.out.println(card.name.substring(0, 1));
-				count+=5;
-			}
-			if(card.getName().substring(2, card.getName().length()).equals("2"))
-			{
-				//System.out.println(2);
-				count+=2;
-			}
-		}
-		return count;
-
-	}
-	
 	//得到最大相同数
 	public static void getMax(Card_index card_index,List<CardLabel> list){
 		int count[]=new int[14];//1-13各算一种,王算第14种
@@ -139,6 +58,7 @@ public class Common {
 	public static int checkCards(List<CardLabel> c,List<CardLabel>[] current){
 		//找出当前最大的牌是哪个电脑出的,c是点选的牌
 		List<CardLabel> currentlist=(current[0].size()>0)?current[0]:current[2];
+		
 		int cType=CardType.getType(c);
 		//如果张数不同直接过滤
 		if(cType!=CardType.T4&&c.size()!=currentlist.size())

@@ -69,14 +69,14 @@ public class CardLabel extends JLabel implements MouseListener{
 		if(name == null){
 			return 0;
 		}
-		String str = name.substring(2,name.length());
-		if("1".equals(str) || "2".equals(str)){ 
-			return Integer.parseInt(str) + 13;
+		int value = Integer.parseInt(name.substring(2,name.length()));
+		if(value == 1 || value == 2){ 
+			value += 13;
 		}
 		if(getColor() == 5){
-			return Integer.parseInt(str) + 2;
+			value += 2;
 		}
-		return Integer.parseInt(str);
+		return value;
 	}
 
 	/**

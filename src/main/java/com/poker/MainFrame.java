@@ -17,7 +17,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import lombok.Data;
@@ -25,21 +24,25 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class MainFrame extends JFrame implements ActionListener {
+public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = -2875228669172807387L;
 
-	public Container container = null;// 定义容器
+	public Container container = null;
 
 	private JMenuItem start;
 
 	private JMenuItem exit;
 
-	private JMenuItem about;// 定义菜单按钮
+	private JMenuItem about;
 
-	private JButton landlord[]=new JButton[2];//抢地主按钮
+	private JButton competeButton;
 
-	private JButton publishCard[]=new JButton[2];//出牌按钮
+	private JButton notCompeteButton;
+
+	private JButton publishButton;
+
+	private JButton notPublishButton;
 
 	private int dizhuFlag;//地主标志
 
@@ -47,41 +50,149 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	private JLabel dizhu; //地主图标
 
-	/**
-	 * 当前的出牌
-	 */
 	private List<CardLabel> currentList[] = new ArrayList[3]; 
 
-	/**
-	 * 定义3个玩家表
-	 */
-	List<CardLabel> playerList[] = new ArrayList[3];  
+	private CardPlayer player;
+	
+	private CardPlayer leftConputer;
+
+	private CardPlayer rightConputer;
 
 	List<CardLabel> lordList;//地主牌
-	CardLabel card[] = new CardLabel[56]; // 定义54张牌
-	JTextField time[]=new JTextField[3]; //计时器
-	Time t; //定时器（线程）
-	boolean nextPlayer=false; //转换角色
-	public MainFrame(){
 
-		Init();// 初始化
-		SetMenu();// 创建菜单 按钮(抢地主，发牌,计时器)
-		this.setVisible(true);
-		CardInit();//发牌
-		getLord(); //发完牌开始抢地主
-		time[1].setVisible(true);
+	CardLabel card[] = new CardLabel[56]; 
+
+	Time t; //定时器（线程）
+	
+	boolean nextPlayer=false; //转换角色
+
+	public MainFrame(){
+		setSize(830, 620);
+		setVisible(true);
+		setResizable(false);
+		setLocationRelativeTo(getOwner());
+		setTitle("斗地主 - shanhm1991@163.com");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		init();
+
+		CardInit();
+
+		completeLord();
+
+		player.getTimeFiled().setVisible(true);
 		//线程安全性,把非主线程的UI控制放到里面
 		SwingUtilities.invokeLater(new NewTimer(this,10));
+	}
 
+	public void init() {
+		container = this.getContentPane();
+		container.setLayout(null);
+		container.setBackground(new Color(0, 112, 26)); 
+
+		start = new JMenuItem("新游戏");
+		start.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// this.restart();
+			}
+		});
+
+		exit = new JMenuItem("退出");
+		exit.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+
+		about = new JMenuItem("关于");
+		about.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showAbout();
+			}
+		});
+
+		JMenu gameMenu = new JMenu("游戏");
+		gameMenu.add(start);
+		gameMenu.add(exit);
+		JMenu helpMenu = new JMenu("帮助");
+		helpMenu.add(about);
+		JMenuBar menu = new JMenuBar();
+		menu.add(gameMenu);
+		menu.add(helpMenu);
+		this.setJMenuBar(menu);
+
+		competeButton = new JButton("抢地主");
+		competeButton.setVisible(false);
+		competeButton.setBounds(320, 400,75,20);
+		competeButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				player.getTimeFiled().setText("抢地主");
+				t.isRun=false; 
+			}
+		});
+		container.add(competeButton);
+
+		notCompeteButton = new JButton("不  抢");
+		notCompeteButton.setVisible(false);
+		notCompeteButton.setBounds(420, 400,75,20);
+		notCompeteButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				player.getTimeFiled().setText("不抢");
+				t.isRun=false; 
+			}
+		});
+		container.add(notCompeteButton);
+
+		publishButton= new JButton("出牌");
+		publishButton.setVisible(false);
+		publishButton.setBounds(320, 400, 60, 20);
+		publishButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				playPublish();
+			}
+		});
+		container.add(publishButton);
+
+		notPublishButton= new JButton("不要");
+		notPublishButton.setVisible(false);
+		notPublishButton.setBounds(420, 400, 60, 20);
+		notPublishButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				notPublish();
+			}
+		});
+		container.add(notPublishButton);
+
+		dizhu=new JLabel(new ImageIcon("images/dizhu.gif"));
+		dizhu.setVisible(false);
+		dizhu.setSize(40, 40);
+		container.add(dizhu);
+		
+		for(int i=0;i<3;i++){
+			currentList[i] = new ArrayList<CardLabel>();
+		}
+		
+		player = new CardPlayer(this,CardPlayer.ROLE_PLAYER);
+		leftConputer = new CardPlayer(this,CardPlayer.ROLE_LEFT);
+		rightConputer = new CardPlayer(this,CardPlayer.ROLE_RIGHT);
 	}
-	// 抢地主
-	public void getLord(){
-		//System.out.println(CardType.c0.toString());
-		for(int i=0;i<2;i++)
-			landlord[i].setVisible(true);
+
+	/**
+	 * 抢地主
+	 */
+	public void completeLord(){
+		competeButton.setVisible(true);
+		notCompeteButton.setVisible(true);
 	}
-	//初始化牌
-	// 发牌洗牌
+
+	// 发牌
 	public void CardInit() {
 
 		int count = 1;
@@ -107,9 +218,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			card[a]=card[b];
 			card[b]=k;
 		}
-		//开始发牌
-		for(int i=0;i<3;i++)
-			playerList[i]=new ArrayList<CardLabel>(); //玩家牌
+
 		lordList=new ArrayList<CardLabel>();//地主牌三张
 		int t=0;
 		for(int i=1;i<=54;i++){
@@ -118,182 +227,105 @@ public class MainFrame extends JFrame implements ActionListener {
 				lordList.add(card[i]);
 				continue;
 			}
+			
 			switch ((t++)%3) {
-			case 0://左手玩家
+			case 0:
 				card[i].move(new Point(50,60+i*5));
-				playerList[0].add(card[i]);
+				leftConputer.getCardList().add(card[i]);
 				break;
-			case 1://我
+			case 1:
 				card[i].move(new Point(180+i*7,450));
-				playerList[1].add(card[i]);
-				card[i].turnUp(); //显示正面
+				player.getCardList().add(card[i]);
+				card[i].turnUp(); 
 				break;
-			case 2://右手玩家
+			case 2:
 				card[i].move(new Point(700,60+i*5));
-				playerList[2].add(card[i]);
+				rightConputer.getCardList().add(card[i]);
 				break;
 			}
 			//card[i].turnFront(); //显示正面
 			container.setComponentZOrder(card[i], 0);
 		}
-		//发完牌排序，从大到小
-		for(int i=0;i<3;i++)
-		{
-			Common.order(playerList[i]);
-			Common.rePosition(this,playerList[i],i);//重新定位
-		}
-		dizhu=new JLabel(new ImageIcon("images/dizhu.gif"));
-		dizhu.setVisible(false);
-		dizhu.setSize(40, 40);
-		container.add(dizhu);
+
+		player.order();
+		leftConputer.order();
+		rightConputer.order();
+
+		leftConputer.resetPosition();
+		rightConputer.resetPosition();
+		player.resetPosition();
 	}
 
-	// 初始化窗体
-	public void Init() {
-
-		this.setTitle("斗地主 -- @牧风");
-		this.setSize(830, 620);
-		setResizable(false);
-		setLocationRelativeTo(getOwner()); // 屏幕居中
-		container = this.getContentPane();
-		container.setLayout(null);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		container.setBackground(new Color(0, 112, 26)); // 背景为绿色
-
-	}
-
-	// 创建菜单 功能按钮
-	public void SetMenu() {
-		JMenuBar jMenuBar = new JMenuBar();
-		JMenu game = new JMenu("游戏");
-		JMenu help = new JMenu("帮助");
-
-		start = new JMenuItem("新游戏");
-		exit = new JMenuItem("退出");
-		about = new JMenuItem("关于");
-
-		start.addActionListener(this);
-		exit.addActionListener(this);
-		about.addActionListener(this);
-
-		game.add(start);
-		game.add(exit);
-		help.add(about);
-
-		jMenuBar.add(game);
-		jMenuBar.add(help);
-		this.setJMenuBar(jMenuBar);
-
-		landlord[0]=new JButton("抢地主");
-		landlord[1]=new JButton("不     抢");
-		publishCard[0]= new JButton("出牌");
-		publishCard[1]= new JButton("不要");
-		for(int i=0;i<2;i++)
-		{
-			publishCard[i].setBounds(320+i*100, 400, 60, 20);
-			landlord[i].setBounds(320+i*100, 400,75,20);
-			container.add(landlord[i]);
-			landlord[i].addActionListener(this);
-			landlord[i].setVisible(false);
-			container.add(publishCard[i]);
-			publishCard[i].setVisible(false);
-			publishCard[i].addActionListener(this);
+	private void playPublish(){
+		List<CardLabel> publishCards = new ArrayList<CardLabel>();
+		List<CardLabel> myCards = player.getCardList();
+		for(int i = 0; i < myCards.size(); i++){
+			CardLabel card = myCards.get(i);
+			if(card.isClicked()){
+				publishCards.add(card);
+			}
 		}
-		for(int i=0;i<3;i++){
-			time[i]=new JTextField("倒计时:");
-			time[i].setVisible(false);
-			container.add(time[i]);
-		}
-		time[0].setBounds(140, 230, 60, 20);
-		time[1].setBounds(374, 360, 60, 20);
-		time[2].setBounds(620, 230, 60, 20);
+		int flag=0;
 
-		for(int i=0;i<3;i++){
-			currentList[i]=new ArrayList<CardLabel>();
+		//主动出牌or跟牌
+		if(leftConputer.getTimeFiled().getText().equals("不要") && rightConputer.getTimeFiled().getText().equals("不要")){
+			if(CardType.getType(publishCards)!=CardType.T0)
+				flag=1;//表示可以出牌
+		}else{
+			flag=Common.checkCards(publishCards,currentList);
 		}
+		
+		//判断是否符合出牌
+		if(flag==1){
+			currentList[1]=publishCards;
+			player.getCardList().removeAll(currentList[1]);//移除走的牌
 
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		if (e.getSource() == exit) {
-			this.dispose();
-		}
-		if (e.getSource() == about) {
-			JOptionPane.showMessageDialog(this, "牧风");
-		}
-		if (e.getSource() == start) {
-			// this.restart();
-		}
-		if(e.getSource()==landlord[0])
-		{
-			time[1].setText("抢地主");
-			t.isRun=false; //时钟终结
-		}
-		if(e.getSource()==landlord[1])
-		{
-			time[1].setText("不抢");
-			t.isRun=false; //时钟终结
-		}
-		//如果是不要
-		if(e.getSource()==publishCard[1])
-		{
+			//定位出牌
+			Point point=new Point();
+			point.x=(770/2)-(currentList[1].size()+1)*15/2;;
+			point.y=300;
+			for(int i=0,len=currentList[1].size();i<len;i++){
+				currentList[1].get(i).move(point);
+				point.x+=15;
+			}
+			
+			player.resetPosition();
+			player.getTimeFiled().setVisible(false);
 			this.nextPlayer=true;
-			currentList[1].clear();
-			time[1].setText("不要");
-		}
-		//如果是出牌按钮
-		if(e.getSource()==publishCard[0])
-		{
-			List<CardLabel> c=new ArrayList<CardLabel>();
-			//点选出牌
-			for(int i=0;i<playerList[1].size();i++)
-			{
-				CardLabel card = playerList[1].get(i);
-				if(card.isClicked())
-				{
-					c.add(card);
-				}
-			}
-			int flag=0;
-
-			//主动出牌
-			if(time[0].getText().equals("不要")&&time[2].getText().equals("不要")){
-				if(CardType.getType(c)!=CardType.T0)
-					flag=1;//表示可以出牌
-				//跟牌
-			}else{
-
-				flag=Common.checkCards(c,currentList);
-			}
-			//判断是否符合出牌
-			if(flag==1)
-			{
-				currentList[1]=c;
-				playerList[1].removeAll(currentList[1]);//移除走的牌
-				//定位出牌
-				Point point=new Point();
-				point.x=(770/2)-(currentList[1].size()+1)*15/2;;
-				point.y=300;
-				for(int i=0,len=currentList[1].size();i<len;i++){
-					currentList[1].get(i).move(point);
-					point.x+=15;
-				}
-				//抽完牌后重新整理牌
-				Common.rePosition(this, playerList[1], 1);
-				time[1].setVisible(false);
-				this.nextPlayer=true;
-			}
-
 		}
 	}
+
+	private void notPublish(){
+		nextPlayer=true;
+		currentList[1].clear();
+		player.getTimeFiled().setText("不要");
+	}
+
+	private void showAbout(){
+		JOptionPane.showMessageDialog(this, "version 1.0  by牧风-shanhm1991@163.com");
+	}
+	
+	public CardPlayer getPlayer(int role){
+		switch(role){
+		case CardPlayer.ROLE_LEFT:
+			return leftConputer;
+		case CardPlayer.ROLE_PLAYER:
+			return player;
+		case CardPlayer.ROLE_RIGHT:
+			return rightConputer;
+		default:
+			return null;
+		}
+	}
+
 
 	public static void main(String args[]) {
 
 		new MainFrame();
 
 	}
+
+
 
 }
 
