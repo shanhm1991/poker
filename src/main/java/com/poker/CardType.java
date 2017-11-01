@@ -107,12 +107,6 @@ public class CardType {
 			return T0;
 		}
 
-		//5张：3带2、顺子
-		if(len == 5){
-			for(CardLabel card : list){
-
-			}
-		}
 
 		//当5张以上时，顺子，3带2，飞机，2顺，4带2等等
 		if(len >= 5){
@@ -158,18 +152,22 @@ public class CardType {
 		return T0;
 	}
 	
+	/**
+	 * 1-13各算一种,王算第14种
+	 */
 	private static void getMax(Card_index card_index,List<CardLabel> list){
-		int count[]=new int[14];//1-13各算一种,王算第14种
+		int count[]=new int[14];
 		for(int i=0;i<14;i++)
 			count[i]=0;
+		
 		for(int i=0,len=list.size();i<len;i++){
 			if(list.get(i).getColor()==5)
 				count[13]++;
 			else
-				count[list.get(i).getValue()-1]++;
+				count[list.get(i).getValue()-1]++; //java.lang.ArrayIndexOutOfBoundsException: 14 TODO
 		}
-		for(int i=0;i<14;i++)
-		{
+		
+		for(int i=0;i<14;i++){
 			switch (count[i]) {
 			case 1:
 				card_index.a[0].add(i+1);
@@ -366,4 +364,8 @@ public class CardType {
 		list.removeAll(del);
 	}
 
+}
+
+class Card_index{
+	List a[]=new ArrayList[4];//单张
 }

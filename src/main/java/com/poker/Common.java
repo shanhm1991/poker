@@ -6,7 +6,7 @@ import java.util.List;
 public class Common {
 	//拆牌
 	public static Model getModel(List<CardLabel> list){
-		List list2=new ArrayList<CardLabel>(list);
+		List<CardLabel> list2=new ArrayList<CardLabel>(list);
 		Model model=new Model();
 		CardType.getT4(list2, model); 
 		CardType.getT3(list2, model);
@@ -26,10 +26,9 @@ public class Common {
 	}
 
 	//按照重复次数排序
-	public static List getOrder2(List<CardLabel> list){
+	public static List<CardLabel> getOrder2(List<CardLabel> list){
 		List<CardLabel> list2=new ArrayList<CardLabel>(list);
 		List<CardLabel> list3=new ArrayList<CardLabel>();
-		List<Integer> list4=new ArrayList<Integer>();
 		int len=list2.size();
 		int a[]=new int[20];
 		for(int i=0;i<20;i++)
@@ -56,8 +55,4 @@ public class Common {
 		}
 		return list3;
 	}
-}
-
-class Card_index{
-	List a[]=new ArrayList[4];//单张
 }

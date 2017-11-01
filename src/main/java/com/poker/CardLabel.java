@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(of = {"name"},callSuper = true)
-public class CardLabel extends JLabel implements MouseListener{
+public class CardLabel extends JLabel {
 
 	private static final long serialVersionUID = -4590127474545680976L;
 
@@ -37,7 +37,26 @@ public class CardLabel extends JLabel implements MouseListener{
 		}
 		this.setSize(71, 96);
 		this.setVisible(true);
-		this.addMouseListener(this);
+		this.addMouseListener(new MouseListener(){
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(clickable){
+					int step; 
+					if(clicked)
+						step=-20;
+					else {
+						step=20;
+					}
+					clicked=!clicked; 
+					Point from = getLocation();
+					move(new Point(from.x,from.y-step));
+				}
+			}
+			public void mousePressed(MouseEvent e) {}
+			public void mouseReleased(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+		});
 	}
 
 	public void turnUp() {
@@ -79,24 +98,6 @@ public class CardLabel extends JLabel implements MouseListener{
 		return value;
 	}
 
-	/**
-	 * 选中时移动
-	 */
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		if(clickable){
-			int step; 
-			if(clicked)
-				step=-20;
-			else {
-				step=20;
-			}
-			clicked=!clicked; 
-			Point from=this.getLocation();
-			move(new Point(from.x,from.y-step));
-		}
-	}
-
 	public void move(Point to){
 		Point from = this.getLocation();
 		if(to.x!=from.x){
@@ -122,9 +123,4 @@ public class CardLabel extends JLabel implements MouseListener{
 		}
 		this.setLocation(to);
 	}
-
-	public void mouseEntered(MouseEvent arg0) {}
-	public void mouseExited(MouseEvent arg0) {}
-	public void mousePressed(MouseEvent arg0) {}
-	public void mouseReleased(MouseEvent arg0) {}
 }

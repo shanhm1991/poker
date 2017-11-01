@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 public class TurnThread extends Thread {
 	MainFrame main;
@@ -19,7 +18,6 @@ public class TurnThread extends Thread {
 
 	@Override
 	public void run() {
-
 		while (i > -1 && isRun) {
 			main.getPlayer().getTimeFiled().setText("倒计时:" + i--);
 			second(1);
@@ -37,7 +35,7 @@ public class TurnThread extends Thread {
 		for (CardLabel card : player.getCardList()){
 			card.setClickable(true);
 		}
-			
+
 		Point point = null;
 		if (main.getPlayer().getTimeFiled().getText().equals("抢地主")) {
 			// 得到地主牌
@@ -76,7 +74,7 @@ public class TurnThread extends Thread {
 				//openlord(false);
 			}
 		}
-		
+
 		main.getDizhuLabel().setLocation(point);
 		main.getDizhuLabel().setVisible(true);
 
@@ -84,7 +82,7 @@ public class TurnThread extends Thread {
 		main.getNotCompeteButton().setVisible(false);
 
 		turnOn(false);
-		
+
 		main.getPlayer().getTimeFiled().setText("不要");
 		main.getPlayer().getTimeFiled().setVisible(false);
 		main.getLeftConputer().getTimeFiled().setText("不要");
@@ -96,33 +94,32 @@ public class TurnThread extends Thread {
 		main.setTurn(main.getDizhuPosition());  
 
 		while (true) {
-			if(main.getTurn() == CardPlayer.POSITION_PLAYER) {
+			switch(main.getTurn()){
+			case CardPlayer.POSITION_PLAYER:
 				turnOn(true);// 出牌按钮 --我出牌
 				timeWait(30, 1);// 我自己的定时器
 				turnOn(false);//选完关闭
 				main.setTurn((main.getTurn()+1)%3);
-				if(win())
-					break;
-			}
-
-			if (main.getTurn() == CardPlayer.POSITION_LEFT) {
-				timeWait(1, 0); // 定时
-				
+				if(win()){
+					return;
+				}
+				break;
+			case CardPlayer.POSITION_LEFT:
+				timeWait(1, 0); 
 				main.getPlayer(CardPlayer.POSITION_LEFT).publishCard();
-				
 				main.setTurn((main.getTurn()+1)%3);
-				if(win())
-					break;
-			}
-
-			if(main.getTurn() == CardPlayer.POSITION_RIGHT){
-				timeWait(1, 2); // 定时
-				
+				if(win()){
+					return;
+				}
+				break;
+			case CardPlayer.POSITION_RIGHT:
+				timeWait(1, 2); 
 				main.getPlayer(CardPlayer.POSITION_RIGHT).publishCard();
-				
 				main.setTurn((main.getTurn()+1)%3);
-				if(win())
-					break;
+				if(win()){
+					return;
+				}
+				break;
 			}
 		}
 	}
@@ -156,9 +153,9 @@ public class TurnThread extends Thread {
 	}
 
 	// 按name获得Card，方便从Model取出
-	public List getCardByName(List<CardLabel> list, String n) {
+	public List<CardLabel> getCardByName(List<CardLabel> list, String n) {
 		String[] name = n.split(",");
-		List cardsList = new ArrayList<CardLabel>();
+		List<CardLabel> cardsList = new ArrayList<CardLabel>();
 		int j = 0;
 		for (int i = 0, len = list.size(); i < len; i++) {
 			if (j < name.length && list.get(i).getName().equals(name[j])) {
@@ -204,20 +201,18 @@ public class TurnThread extends Thread {
 
 	//判断输赢
 	public boolean win(){
-		//		for(int i=0;i<3;i++){
-		//			if(main.playerList[i].size()==0)
-		//			{
-		//				String s;
-		//				if(i==1)
-		//				{
-		//					s="恭喜你，胜利了!";
-		//				}else {
-		//					s="恭喜电脑"+i+",赢了! 你的智商有待提高哦";
-		//				}
-		//				JOptionPane.showMessageDialog(main, s);
-		//				return true;
-		//			}
-		//		}
+		for(int i=0;i<3;i++){
+			if(main.getPlayer().getCardList().isEmpty()){
+				String s;
+				if(i==1){
+					s="恭喜你，胜利了!";
+				}else {
+					s="恭喜电脑"+i+",赢了! 你的智商有待提高哦";
+				}
+				JOptionPane.showMessageDialog(main, s);
+				return true;
+			}
+		}
 		return false;
 	}
 }

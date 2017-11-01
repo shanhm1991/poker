@@ -128,62 +128,57 @@ public class CardPlayer {
 		for(int i=0,len=cardList.size();i<len;i++){
 			CardLabel card=cardList.get(i);
 			if(card.getName().substring(0, 1).equals("5")){
-				//System.out.println(card.name.substring(0, 1));
 				score+=5;
 			}
 			if(card.getName().substring(2, card.getName().length()).equals("2")){
-				//System.out.println(2);
 				score+=2;
 			}
 		}
 		return score;
 	}
 
-	public void publishCard() {//int position
-		//		CardPlayer player = frame.getPlayer(position);
+	public void publishCard() {
 		Model model = Common.getModel(cardList);
-		// 待走的牌
-		List<String> list = new ArrayList();
-
+		List<String> publishCardList = new ArrayList<String>();
 		// 主动出牌
 		if (frame.getPlayer((position + 1) % 3).getTimeFiled().getText().equals("不要")
 				&& frame.getPlayer((position + 2) % 3).getTimeFiled().getText().equals("不要")) {
 			// 有单出单 (除开3带，飞机能带的单牌)
 			if (model.a1.size() > (model.a111222.size() * 2 + model.a3.size())) {
-				list.add(model.a1.get(model.a1.size() - 1));
+				publishCardList.add(model.a1.get(model.a1.size() - 1));
 			}// 有对子出对子 (除开3带，飞机)
 			else if (model.a2.size() > (model.a111222.size() * 2 + model.a3
 					.size())) {
-				list.add(model.a2.get(model.a2.size() - 1));
+				publishCardList.add(model.a2.get(model.a2.size() - 1));
 			}// 有顺子出顺子
 			else if (model.a123.size() > 0) {
-				list.add(model.a123.get(model.a123.size() - 1));
+				publishCardList.add(model.a123.get(model.a123.size() - 1));
 			}// 有3带就出3带，没有就出光3
 			else if (model.a3.size() > 0) {
 				// 3带单,且非关键时刻不能带王，2
 				if (model.a1.size() > 0) {
-					list.add(model.a1.get(model.a1.size() - 1));
+					publishCardList.add(model.a1.get(model.a1.size() - 1));
 				}// 3带对
 				else if (model.a2.size() > 0) {
-					list.add(model.a2.get(model.a2.size() - 1));
+					publishCardList.add(model.a2.get(model.a2.size() - 1));
 				}
-				list.add(model.a3.get(model.a3.size() - 1));
+				publishCardList.add(model.a3.get(model.a3.size() - 1));
 			}// 有双顺出双顺
 			else if (model.a112233.size() > 0) {
-				list.add(model.a112233.get(model.a112233.size() - 1));
+				publishCardList.add(model.a112233.get(model.a112233.size() - 1));
 			}// 有飞机出飞机
 			else if (model.a111222.size() > 0) {
 				String name[] = model.a111222.get(0).split(",");
 				// 带单
 				if (name.length / 3 <= model.a1.size()) {
-					list.add(model.a111222.get(model.a111222.size() - 1));
+					publishCardList.add(model.a111222.get(model.a111222.size() - 1));
 					for (int i = 0; i < name.length / 3; i++)
-						list.add(model.a1.get(i));
+						publishCardList.add(model.a1.get(i));
 				} else if (name.length / 3 <= model.a2.size())// 带双
 				{
-					list.add(model.a111222.get(model.a111222.size() - 1));
+					publishCardList.add(model.a111222.get(model.a111222.size() - 1));
 					for (int i = 0; i < name.length / 3; i++)
-						list.add(model.a2.get(i));
+						publishCardList.add(model.a2.get(i));
 				}
 				// 有炸弹出炸弹
 			} else if (model.a4.size() > 0) {
@@ -191,17 +186,17 @@ public class CardPlayer {
 				int sizea1 = model.a1.size();
 				int sizea2 = model.a2.size();
 				if (sizea1 >= 2) {
-					list.add(model.a1.get(sizea1 - 1));
-					list.add(model.a1.get(sizea1 - 2));
-					list.add(model.a4.get(0));
+					publishCardList.add(model.a1.get(sizea1 - 1));
+					publishCardList.add(model.a1.get(sizea1 - 2));
+					publishCardList.add(model.a4.get(0));
 
 				} else if (sizea2 >= 2) {
-					list.add(model.a2.get(sizea1 - 1));
-					list.add(model.a2.get(sizea1 - 2));
-					list.add(model.a4.get(0));
+					publishCardList.add(model.a2.get(sizea1 - 1));
+					publishCardList.add(model.a2.get(sizea1 - 2));
+					publishCardList.add(model.a4.get(0));
 
 				} else {// 直接炸
-					list.add(model.a4.get(0));
+					publishCardList.add(model.a4.get(0));
 
 				}
 
@@ -224,74 +219,74 @@ public class CardPlayer {
 			//如果是单牌
 			if(cType==CardType.T1)
 			{
-				AI_1(model.a1, cardList, list, position);
+				AI_1(model.a1, cardList, publishCardList, position);
 			}//如果是对子
 			else if(cType==CardType.T2)
 			{
-				AI_1(model.a2, cardList, list, position);
+				AI_1(model.a2, cardList, publishCardList, position);
 			}//3带
 			else if(cType==CardType.T3)
 			{
-				AI_1(model.a3, cardList, list, position);
+				AI_1(model.a3, cardList, publishCardList, position);
 			}//炸弹
 			else if(cType==CardType.T4)
 			{
-				AI_1(model.a4, cardList, list, position);
+				AI_1(model.a4, cardList, publishCardList, position);
 			}//如果是3带1
 			else if(cType==CardType.T31){
 				//偏家 涉及到拆牌
 				//if((role+1)%3==main.dizhuFlag)
-				AI_2(model.a3, model.a1, cardList, list);
+				AI_2(model.a3, model.a1, cardList, publishCardList);
 			}//如果是3带2
 			else if(cType==CardType.T32){
 				//偏家
 				//if((role+1)%3==main.dizhuFlag)
-				AI_2(model.a3, model.a2, cardList, list);
+				AI_2(model.a3, model.a2, cardList, publishCardList);
 			}//如果是4带11
 			else if(cType==CardType.T411){
-				AI_5(model.a4, model.a1, cardList, list, position);
+				AI_5(model.a4, model.a1, cardList, publishCardList, position);
 			}
 			//如果是4带22
 			else if(cType==CardType.T422){
-				AI_5(model.a4, model.a2, cardList, list, position);
+				AI_5(model.a4, model.a2, cardList, publishCardList, position);
 			}
 			//顺子
 			else if(cType==CardType.T123){
-				AI_3(model.a123, cardList, list, position);
+				AI_3(model.a123, cardList, publishCardList, position);
 			}
 			//双顺
 			else if(cType==CardType.T1122){
-				AI_3(model.a112233, cardList, list, position);
+				AI_3(model.a112233, cardList, publishCardList, position);
 			}
 			//飞机带单
 			else if(cType==CardType.T11122234){
-				AI_4(model.a111222,model.a1, cardList, list, position);
+				AI_4(model.a111222,model.a1, cardList, publishCardList, position);
 			}
 			//飞机带对
 			else if(cType==CardType.T1112223344){
-				AI_4(model.a111222,model.a2, cardList, list, position);
+				AI_4(model.a111222,model.a2, cardList, publishCardList, position);
 			}
 			//炸弹
-			if(list.size()==0)
+			if(publishCardList.size()==0)
 			{
 				int len4=model.a4.size();
 				if(len4>0)
-					list.add(model.a4.get(len4-1));
+					publishCardList.add(model.a4.get(len4-1));
 			}
 		}
 
 		// 定位出牌
 		currentList.clear();
-		if (list.size() > 0) {
+		if (publishCardList.size() > 0) {
 			Point point = new Point();
 			if (position == 0)
 				point.x = 200;
 			if (position == 2)
 				point.x = 550;
-			point.y = (400 / 2) - (list.size() + 1) * 15 / 2;// 屏幕中部
+			point.y = (400 / 2) - (publishCardList.size() + 1) * 15 / 2;
 			// 将name转换成Card
-			for (int i = 0, len = list.size(); i < len; i++) {
-				List<CardLabel> cards = getCardByName(cardList,list.get(i));
+			for (int i = 0, len = publishCardList.size(); i < len; i++) {
+				List<CardLabel> cards = getCardByName(cardList,publishCardList.get(i));
 				for (CardLabel card : cards) {
 					card.move(point);
 					point.y += 15;
@@ -309,9 +304,9 @@ public class CardPlayer {
 		}
 	}
 
-	private List getCardByName(List<CardLabel> list, String n) {
+	private List<CardLabel> getCardByName(List<CardLabel> list, String n) {
 		String[] name = n.split(",");
-		List cardsList = new ArrayList<CardLabel>();
+		List<CardLabel> cardsList = new ArrayList<CardLabel>();
 		int j = 0;
 		for (int i = 0, len = list.size(); i < len; i++) {
 			if (j < name.length && list.get(i).getName().equals(name[j])) {
