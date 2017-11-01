@@ -123,7 +123,7 @@ public class CardType {
 			}
 
 			//求出各种数字出现频率
-			Common.getMax( card_index,list); //a[0,1,2,3]分别表示重复1,2,3,4次的牌
+			getMax(card_index,list); //a[0,1,2,3]分别表示重复1,2,3,4次的牌
 			//3带2 -----必含重复3次的牌
 			if(card_index.a[2].size()==1 &&card_index.a[1].size()==1 && len==5)
 				return T32;
@@ -157,6 +157,38 @@ public class CardType {
 		}
 		return T0;
 	}
+	
+	private static void getMax(Card_index card_index,List<CardLabel> list){
+		int count[]=new int[14];//1-13各算一种,王算第14种
+		for(int i=0;i<14;i++)
+			count[i]=0;
+		for(int i=0,len=list.size();i<len;i++){
+			if(list.get(i).getColor()==5)
+				count[13]++;
+			else
+				count[list.get(i).getValue()-1]++;
+		}
+		for(int i=0;i<14;i++)
+		{
+			switch (count[i]) {
+			case 1:
+				card_index.a[0].add(i+1);
+				break;
+			case 2:
+				card_index.a[1].add(i+1);
+				break;
+			case 3:
+				card_index.a[2].add(i+1);
+				break;
+			case 4:
+				card_index.a[3].add(i+1);
+				break;
+			}
+		}
+	}
+	
+	
+	
 
 	public static void getT123(List<CardLabel> list,Model model){
 		List<CardLabel> del=new ArrayList<CardLabel>();//要删除的Cards

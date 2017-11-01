@@ -56,9 +56,7 @@ public class MainFrame extends JFrame {
 
 	private CardPlayer rightConputer;
 
-	List<CardLabel> lordList;
-
-	CardLabel card[] = new CardLabel[56]; 
+	private List<CardLabel> lordCardList;
 
 	TurnThread turnThread; 
 
@@ -181,8 +179,8 @@ public class MainFrame extends JFrame {
 	 * 发牌
 	 */
 	public void initCard() {
+		CardLabel card[] = new CardLabel[56];
 		int count = 1;
-		//初始化牌
 		for (int i = 1; i <= 5; i++) {
 			for (int j = 1; j <= 13; j++) {
 				if ((i == 5) && (j > 2))
@@ -200,17 +198,17 @@ public class MainFrame extends JFrame {
 			Random random=new Random();
 			int a=random.nextInt(54)+1;
 			int b=random.nextInt(54)+1;
-			CardLabel k=card[a];
-			card[a]=card[b];
-			card[b]=k;
+			CardLabel k = card[a];
+			card[a] = card[b];
+			card[b] = k;
 		}
 
-		lordList=new ArrayList<CardLabel>();//地主牌三张
+		lordCardList=new ArrayList<CardLabel>();
 		int t=0;
 		for(int i=1;i<=54;i++){
 			if(i>=52){
 				card[i].move(new Point(300+(i-52)*80,10));
-				lordList.add(card[i]);
+				lordCardList.add(card[i]);
 				continue;
 			}
 
@@ -229,7 +227,6 @@ public class MainFrame extends JFrame {
 				rightConputer.getCardList().add(card[i]);
 				break;
 			}
-			//card[i].turnFront(); //显示正面
 			container.setComponentZOrder(card[i], 0);
 		}
 
