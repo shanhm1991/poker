@@ -35,7 +35,7 @@ public class Common {
 			a[i]=0;
 		for(int i=0;i<len;i++)
 		{
-			a[list2.get(i).getValue()]++;
+			a[list2.get(i).value()]++;
 		}
 		int max=0;
 		for(int i=0;i<20;i++){
@@ -46,7 +46,7 @@ public class Common {
 			}
 
 			for(int k=0;k<len;k++){
-				if(list2.get(k).getValue() == max){
+				if(list2.get(k).value() == max){
 					list3.add(list2.get(k));
 				}
 			}

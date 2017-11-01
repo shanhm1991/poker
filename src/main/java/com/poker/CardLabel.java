@@ -35,9 +35,9 @@ public class CardLabel extends JLabel {
 		else {
 			this.turnBack();
 		}
-		this.setSize(71, 96);
-		this.setVisible(true);
-		this.addMouseListener(new MouseListener(){
+		setSize(71, 96);
+		setVisible(true);
+		addMouseListener(new MouseListener(){
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(clickable){
@@ -73,29 +73,40 @@ public class CardLabel extends JLabel {
 	 * 花色 
 	 * 1:黑桃 2:红桃 3:草花 4:方块 5:王
 	 */
-	public int getColor(){
+	public int color(){
 		if(name == null){
 			return 0;
 		}
 		return Integer.parseInt(name.substring(0,1));
 	}
 
-	/**
-	 * 获取牌的大小
-	 * A和2大于其他牌，王大于一切
-	 */
-	public int getValue(){
+	public int value(){
 		if(name == null){
 			return 0;
 		}
 		int value = Integer.parseInt(name.substring(2,name.length()));
-		if(value == 1 || value == 2){ 
-			value += 13;
-		}
-		if(getColor() == 5){
-			value += 2;
+		if(color() == 5) {
+			value += 50;
 		}
 		return value;
+	}
+	
+	/**
+	 * A字和2字单独出为大，也可以以小牌凑顺子
+	 */
+	public int singleValue() {
+		if(name == null){
+			return 0;
+		}
+		int value = Integer.parseInt(name.substring(2,name.length()));
+		if(color() == 5) {
+			value += 50;
+		}else if(value == 1) {
+			value += 13;
+		}else if(value == 2) {
+			value += 15;
+		}
+		return value; 
 	}
 
 	public void move(Point to){
@@ -111,7 +122,7 @@ public class CardLabel extends JLabel {
 			}
 			for(int i=from.x;Math.abs(i-to.x)>20;i+=flag)
 			{
-				double y=k*i+b;//这里主要用的数学中的线性函数
+				double y=k*i+b;
 
 				this.setLocation(i,(int)y);
 				try {

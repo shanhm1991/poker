@@ -70,28 +70,8 @@ public class CardPlayer {
 	public void order(){
 		Collections.sort(cardList,new Comparator<CardLabel>() {
 			@Override
-			public int compare(CardLabel o1, CardLabel o2) {
-				int a1=Integer.parseInt(o1.getName().substring(0, 1));//花色
-				int a2=Integer.parseInt(o2.getName().substring(0,1));
-				int b1=Integer.parseInt(o1.getName().substring(2,o1.getName().length()));//数值
-				int b2=Integer.parseInt(o2.getName().substring(2,o2.getName().length()));
-				int flag=0;
-				//如果是王的话
-				if(a1==5) b1+=100;
-				if(a1==5&&b1==1) b1+=50;
-				if(a2==5) b2+=100;
-				if(a2==5&&b2==1) b2+=50;
-				//如果是A或者2
-				if(b1==1) b1+=20;
-				if(b2==1) b2+=20;
-				if(b1==2) b1+=30;
-				if(b2==2) b2+=30;
-				flag=b2-b1;
-				if(flag==0)
-					return a2-a1;
-				else {
-					return flag;
-				}
+			public int compare(CardLabel c1, CardLabel c2) {
+				return c2.singleValue() - c1.singleValue();
 			}
 		});
 	}
@@ -210,65 +190,34 @@ public class CardPlayer {
 				cardList = nextPlayer.getCurrentList();
 			}
 
-			switch(CardType.getType(cardList)){
-			case CardType.T1: 
-
-			}
-
-			int cType=CardType.getType(cardList);
-			//如果是单牌
-			if(cType==CardType.T1)
-			{
-				AI_1(model.a1, cardList, publishCardList, position);
-			}//如果是对子
-			else if(cType==CardType.T2)
-			{
-				AI_1(model.a2, cardList, publishCardList, position);
-			}//3带
-			else if(cType==CardType.T3)
-			{
-				AI_1(model.a3, cardList, publishCardList, position);
-			}//炸弹
-			else if(cType==CardType.T4)
-			{
-				AI_1(model.a4, cardList, publishCardList, position);
-			}//如果是3带1
-			else if(cType==CardType.T31){
-				//偏家 涉及到拆牌
-				//if((role+1)%3==main.dizhuFlag)
-				AI_2(model.a3, model.a1, cardList, publishCardList);
-			}//如果是3带2
-			else if(cType==CardType.T32){
-				//偏家
-				//if((role+1)%3==main.dizhuFlag)
-				AI_2(model.a3, model.a2, cardList, publishCardList);
-			}//如果是4带11
-			else if(cType==CardType.T411){
-				AI_5(model.a4, model.a1, cardList, publishCardList, position);
-			}
-			//如果是4带22
-			else if(cType==CardType.T422){
-				AI_5(model.a4, model.a2, cardList, publishCardList, position);
-			}
-			//顺子
-			else if(cType==CardType.T123){
-				AI_3(model.a123, cardList, publishCardList, position);
-			}
-			//双顺
-			else if(cType==CardType.T1122){
-				AI_3(model.a112233, cardList, publishCardList, position);
-			}
-			//飞机带单
-			else if(cType==CardType.T11122234){
-				AI_4(model.a111222,model.a1, cardList, publishCardList, position);
-			}
-			//飞机带对
-			else if(cType==CardType.T1112223344){
-				AI_4(model.a111222,model.a2, cardList, publishCardList, position);
+			switch(CardType.getType(cardList)) {
+			case CardType.T1:
+				AI_1(model.a1, cardList, publishCardList, position); break;
+			case CardType.T2:
+				AI_1(model.a2, cardList, publishCardList, position); break;
+			case CardType.T3:
+				AI_1(model.a3, cardList, publishCardList, position); break;
+			case CardType.T4:
+				AI_1(model.a4, cardList, publishCardList, position); break;
+			case CardType.T31:
+				AI_2(model.a3, model.a1, cardList, publishCardList); break;
+			case CardType.T32:
+				AI_2(model.a3, model.a2, cardList, publishCardList); break;
+			case CardType.T411:
+				AI_5(model.a4, model.a1, cardList, publishCardList, position); break;
+			case CardType.T422:
+				AI_5(model.a4, model.a2, cardList, publishCardList, position); break;
+			case CardType.T123:
+				AI_3(model.a123, cardList, publishCardList, position); break;
+			case CardType.T1122:
+				AI_3(model.a112233, cardList, publishCardList, position); break;
+			case CardType.T11122234:
+				AI_4(model.a111222,model.a1, cardList, publishCardList, position); break;
+			case CardType.T1112223344:
+				AI_4(model.a111222,model.a2, cardList, publishCardList, position); break;
 			}
 			//炸弹
-			if(publishCardList.size()==0)
-			{
+			if(publishCardList.size()==0){
 				int len4=model.a4.size();
 				if(len4>0)
 					publishCardList.add(model.a4.get(len4-1));
@@ -323,14 +272,14 @@ public class CardPlayer {
 		//顶家
 		if((position+1)%3 == frame.getDizhuPosition()){
 			for(int i=0,len=model.size();i<len;i++){
-				if(getValueInt(model.get(i)) > player.get(0).getValue()){
+				if(getValueInt(model.get(i)) > player.get(0).value()){
 					list.add(model.get(i));
 					break;
 				}
 			}
 		}else {//偏家
 			for(int len=model.size(),i=len-1;i>=0;i--){
-				if(getValueInt(model.get(i)) > player.get(0).getValue()){
+				if(getValueInt(model.get(i)) > player.get(0).value()){
 					list.add(model.get(i));
 					break;
 				}
@@ -356,7 +305,7 @@ public class CardPlayer {
 			return;
 		for(int len=len1,i=len-1;i>=0;i--)
 		{	
-			if(getValueInt(model1.get(i)) > player.get(0).getValue())
+			if(getValueInt(model1.get(i)) > player.get(0).value())
 			{
 				list.add(model1.get(i));
 				break;
@@ -389,7 +338,7 @@ public class CardPlayer {
 		if(len1<1 || len2<2)
 			return;
 		for(int i=0;i<len1;i++){
-			if(getValueInt(model1.get(i)) > player.get(0).getValue())
+			if(getValueInt(model1.get(i)) > player.get(0).value())
 			{
 				list.add(model1.get(i));
 				for(int j=1;j<=2;j++)
@@ -404,7 +353,7 @@ public class CardPlayer {
 		for(int i=0,len=model.size();i<len;i++)
 		{
 			String []s=model.get(i).split(",");
-			if(s.length==player.size()&&getValueInt(model.get(i)) > player.get(0).getValue())
+			if(s.length==player.size()&&getValueInt(model.get(i)) > player.get(0).value())
 			{
 				list.add(model.get(i));
 				return;
@@ -424,7 +373,7 @@ public class CardPlayer {
 		for(int i=0;i<len1;i++){
 			String []s=model1.get(i).split(",");
 			String []s2=model2.get(0).split(",");
-			if((s.length/3<=len2)&&(s.length*(3+s2.length)==player.size())&&getValueInt(model1.get(i)) > player.get(0).getValue())
+			if((s.length/3<=len2)&&(s.length*(3+s2.length)==player.size())&&getValueInt(model1.get(i)) > player.get(0).value())
 			{
 				list.add(model1.get(i));
 				for(int j=1;j<=s.length/3;j++)

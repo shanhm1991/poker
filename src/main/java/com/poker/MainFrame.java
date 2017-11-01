@@ -315,7 +315,7 @@ public class MainFrame extends JFrame {
 		}
 		//单牌,对子,3带,4炸弹
 		if(cType==CardType.T1||cType==CardType.T2||cType==CardType.T3||cType==CardType.T4){
-			if(c.get(0).getValue() <= currentlist.get(0).getValue())
+			if(c.get(0).singleValue() <= currentlist.get(0).singleValue())
 			{
 				return 0;
 			}else {
@@ -325,7 +325,7 @@ public class MainFrame extends JFrame {
 		//顺子,连队，飞机裸
 		if(cType==CardType.T123||cType==CardType.T1122||cType==CardType.T111222)
 		{
-			if(c.get(0).getValue() <= currentlist.get(0).getValue())
+			if(c.get(0).value() <= currentlist.get(0).value())
 				return 0;
 			else 
 				return 1;
@@ -336,7 +336,7 @@ public class MainFrame extends JFrame {
 				||cType==CardType.T11122234||cType==CardType.T1112223344){
 			List<CardLabel> a1=Common.getOrder2(c); //我出的牌
 			List<CardLabel> a2=Common.getOrder2(currentlist);//当前最大牌
-			if(a1.get(0).getValue() < a2.get(0).getValue())
+			if(a1.get(0).value() < a2.get(0).value())
 				return 0;
 		}
 		return 1;
