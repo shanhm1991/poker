@@ -74,7 +74,7 @@ public class MainFrame extends JFrame {
 
 		initCard();
 
-		player.getTimeFiled().setVisible(true);
+		player.getClockFiled().setVisible(true);
 		
 		//线程安全性,把非主线程的UI控制放到里面
 		SwingUtilities.invokeLater(new NewTimer(this,10));
@@ -125,7 +125,7 @@ public class MainFrame extends JFrame {
 		competeButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				player.getTimeFiled().setText("抢地主");
+				player.getClockFiled().setText("抢地主");
 				turnThread.isRun=false; 
 			}
 		});
@@ -137,7 +137,7 @@ public class MainFrame extends JFrame {
 		notCompeteButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				player.getTimeFiled().setText("不抢");
+				player.getClockFiled().setText("不抢");
 				turnThread.isRun=false; 
 			}
 		});
@@ -149,7 +149,8 @@ public class MainFrame extends JFrame {
 		publishButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				playPublish();
+				player.publishCard();
+//				playPublish();
 			}
 		});
 		container.add(publishButton);
@@ -215,16 +216,16 @@ public class MainFrame extends JFrame {
 			switch ((t++)%3) {
 			case 0:
 				card[i].move(new Point(50,60+i*5));
-				leftConputer.getCardList().add(card[i]);
+				leftConputer.getCardHoldList().add(card[i]);
 				break;
 			case 1:
 				card[i].move(new Point(180+i*7,450));
-				player.getCardList().add(card[i]);
+				player.getCardHoldList().add(card[i]);
 				card[i].turnUp(); 
 				break;
 			case 2:
 				card[i].move(new Point(700,60+i*5));
-				rightConputer.getCardList().add(card[i]);
+				rightConputer.getCardHoldList().add(card[i]);
 				break;
 			}
 			container.setComponentZOrder(card[i], 0);
@@ -242,104 +243,10 @@ public class MainFrame extends JFrame {
 		notCompeteButton.setVisible(true);
 	}
 
-	private void playPublish(){
-		List<CardLabel> publishCards = new ArrayList<CardLabel>();
-		List<CardLabel> myCards = player.getCardList();
-		for(int i = 0; i < myCards.size(); i++){
-			CardLabel card = myCards.get(i);
-			if(card.isClicked()){
-				publishCards.add(card);
-			}
-		}
-		int flag=0;
-
-		//主动出牌or跟牌
-		if(leftConputer.getTimeFiled().getText().equals("不要") && rightConputer.getTimeFiled().getText().equals("不要")){
-			if(CardType.getType(publishCards)!=CardType.T0)
-				flag=1;//表示可以出牌
-		}else{
-			flag=checkCards(publishCards);
-		}
-
-		//判断是否符合出牌
-		if(flag==1){
-			player.setCurrentList(publishCards);
-			player.getCardList().removeAll(publishCards);//移除走的牌
-
-			Point point=new Point();
-			point.x=(770/2)-(publishCards.size()+1)*15/2;;
-			point.y=300;
-			for(int i=0,len=publishCards.size();i<len;i++){
-				publishCards.get(i).move(point);
-				point.x+=15;
-			}
-
-			player.resetPosition();
-			player.getTimeFiled().setVisible(false);
-			this.nextPlayer=true;
-		}
-	}
-
 	private void notPublish(){
 		nextPlayer=true;
-		player.getCurrentList().clear();
-		player.getTimeFiled().setText("不要");
-	}
-
-	//检查牌的是否能出
-	private  int checkCards(List<CardLabel> c){
-		//找出当前最大的牌是哪个电脑出的,c是点选的牌
-		List<CardLabel> currentlist = leftConputer.getCurrentList();
-		if(currentlist.isEmpty()){
-			currentlist = rightConputer.getCurrentList();
-		}
-				
-		int cType=CardType.getType(c);
-		//如果张数不同直接过滤
-		if(cType!=CardType.T4&&c.size()!=currentlist.size())
-			return 0;
-		//比较我的出牌类型
-		if(CardType.getType(c)!= CardType.getType(currentlist))
-		{
-
-			return 0;
-		}
-		//比较出的牌是否要大
-		//王炸弹
-		if(cType==CardType.T4)
-		{
-			if(c.size()==2)
-				return 1;
-			if(currentlist.size()==2)
-				return 0;
-		}
-		//单牌,对子,3带,4炸弹
-		if(cType==CardType.T1||cType==CardType.T2||cType==CardType.T3||cType==CardType.T4){
-			if(c.get(0).singleValue() <= currentlist.get(0).singleValue())
-			{
-				return 0;
-			}else {
-				return 1;
-			}
-		}
-		//顺子,连队，飞机裸
-		if(cType==CardType.T123||cType==CardType.T1122||cType==CardType.T111222)
-		{
-			if(c.get(0).value() <= currentlist.get(0).value())
-				return 0;
-			else 
-				return 1;
-		}
-		//按重复多少排序
-		//3带1,3带2 ,飞机带单，双,4带1,2,只需比较第一个就行，独一无二的 
-		if(cType==CardType.T31||cType==CardType.T32||cType==CardType.T411||cType==CardType.T422
-				||cType==CardType.T11122234||cType==CardType.T1112223344){
-			List<CardLabel> a1=Common.getOrder2(c); //我出的牌
-			List<CardLabel> a2=Common.getOrder2(currentlist);//当前最大牌
-			if(a1.get(0).value() < a2.get(0).value())
-				return 0;
-		}
-		return 1;
+		player.getCardPublishList().clear();
+		player.getClockFiled().setText("不要");
 	}
 
 	private void showAbout(){

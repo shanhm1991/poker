@@ -19,11 +19,11 @@ public class TurnThread extends Thread {
 	@Override
 	public void run() {
 		while (i > -1 && isRun) {
-			main.getPlayer().getTimeFiled().setText("倒计时:" + i--);
+			main.getPlayer().getClockFiled().setText("倒计时:" + i--);
 			second(1);
 		}
 		if (i == -1){
-			main.getPlayer().getTimeFiled().setText("不抢");
+			main.getPlayer().getClockFiled().setText("不抢");
 		}
 
 		main.getCompeteButton().setVisible(false);
@@ -32,14 +32,14 @@ public class TurnThread extends Thread {
 		CardPlayer player = main.getPlayer();
 		CardPlayer leftConputer = main.getLeftConputer();
 		CardPlayer rightConputer = main.getRightConputer();
-		for (CardLabel card : player.getCardList()){
+		for (CardLabel card : player.getCardHoldList()){
 			card.setClickable(true);
 		}
 
 		Point point = null;
-		if (main.getPlayer().getTimeFiled().getText().equals("抢地主")) {
+		if (main.getPlayer().getClockFiled().getText().equals("抢地主")) {
 			// 得到地主牌
-			player.getCardList().addAll(main.getLordCardList());
+			player.getCardHoldList().addAll(main.getLordCardList());
 			openlord(true);
 			second(2);// 等待五秒
 			player.order();
@@ -49,25 +49,25 @@ public class TurnThread extends Thread {
 			main.setDizhuPosition(CardPlayer.POSITION_PLAYER);
 		} else {
 			if (leftConputer.getScore() < rightConputer.getScore()) {
-				main.getRightConputer().getTimeFiled().setText("抢地主");
-				main.getRightConputer().getTimeFiled().setVisible(true);
+				main.getRightConputer().getClockFiled().setText("抢地主");
+				main.getRightConputer().getClockFiled().setVisible(true);
 				openlord(true);
 				second(3);
 				point = rightConputer.getPoint();
 				rightConputer.setDizhu(true); 
-				rightConputer.getCardList().addAll(main.getLordCardList());
+				rightConputer.getCardHoldList().addAll(main.getLordCardList());
 				rightConputer.order();
 				rightConputer.resetPosition();
 				openlord(false);
 				main.setDizhuPosition(CardPlayer.POSITION_RIGHT);
 			} else {
-				main.getLeftConputer().getTimeFiled().setText("抢地主");
-				main.getLeftConputer().getTimeFiled().setVisible(true);
+				main.getLeftConputer().getClockFiled().setText("抢地主");
+				main.getLeftConputer().getClockFiled().setVisible(true);
 				openlord(true);
 				second(3);
 				leftConputer.setDizhu(true); 
 				point = leftConputer.getPoint();
-				leftConputer.getCardList().addAll(main.getLordCardList());
+				leftConputer.getCardHoldList().addAll(main.getLordCardList());
 				leftConputer.order();
 				leftConputer.resetPosition();
 				main.setDizhuPosition(CardPlayer.POSITION_LEFT);
@@ -83,12 +83,12 @@ public class TurnThread extends Thread {
 
 		turnOn(false);
 
-		main.getPlayer().getTimeFiled().setText("不要");
-		main.getPlayer().getTimeFiled().setVisible(false);
-		main.getLeftConputer().getTimeFiled().setText("不要");
-		main.getLeftConputer().getTimeFiled().setVisible(false);
-		main.getRightConputer().getTimeFiled().setText("不要");
-		main.getRightConputer().getTimeFiled().setVisible(false);
+		main.getPlayer().getClockFiled().setText("不要");
+		main.getPlayer().getClockFiled().setVisible(false);
+		main.getLeftConputer().getClockFiled().setText("不要");
+		main.getLeftConputer().getClockFiled().setVisible(false);
+		main.getRightConputer().getClockFiled().setText("不要");
+		main.getRightConputer().getClockFiled().setVisible(false);
 
 		// 开始游戏 根据地主不同顺序不同
 		main.setTurn(main.getDizhuPosition());  
@@ -167,42 +167,41 @@ public class TurnThread extends Thread {
 		return cardsList;
 	}
 	// 延时，模拟时钟
-	public void timeWait(int n, int role) {
-		List<CardLabel> cardList = main.getPlayer(role).getCurrentList();
+	public void timeWait(int n, int position) {
+		List<CardLabel> cardList = main.getPlayer(position).getCardPublishList();
 
 		if (cardList.size() > 0)
 			Common.hideCards(cardList);
-		if (role == 1)// 如果是我，10秒到后直接下一家出牌
+		if (position == 1)// 如果是我，10秒到后直接下一家出牌
 		{
 			int i = n;
 
 			while (main.nextPlayer == false && i >= 0) {
 				// main.container.setComponentZOrder(main.time[player], 0);
 
-				main.getPlayer(role).getTimeFiled().setText("倒计时:" + i);
-				main.getPlayer(role).getTimeFiled().setVisible(true);
+				main.getPlayer(position).getClockFiled().setText("倒计时:" + i);
+				main.getPlayer(position).getClockFiled().setVisible(true);
 				second(1);
 				i--;
 			}
 			if (i == -1) {
-				main.getPlayer(role).getTimeFiled().setText("超时");
+				main.getPlayer(position).getClockFiled().setText("超时");
 			}
 			main.nextPlayer = false;
 		} else {
 			for (int i = n; i >= 0; i--) {
 				second(1);
-				// main.container.setComponentZOrder(main.time[player], 0);
-				main.getPlayer(role).getTimeFiled().setText("倒计时:" + i);
-				main.getPlayer(role).getTimeFiled().setVisible(true);
+				main.getPlayer(position).getClockFiled().setText("倒计时:" + i);
+				main.getPlayer(position).getClockFiled().setVisible(true);
 			}
 		}
-		main.getPlayer(role).getTimeFiled().setVisible(false);
+		main.getPlayer(position).getClockFiled().setVisible(false);
 	}
 
 	//判断输赢
 	public boolean win(){
 		for(int i=0;i<3;i++){
-			if(main.getPlayer().getCardList().isEmpty()){
+			if(main.getPlayer().getCardHoldList().isEmpty()){
 				String s;
 				if(i==1){
 					s="恭喜你，胜利了!";

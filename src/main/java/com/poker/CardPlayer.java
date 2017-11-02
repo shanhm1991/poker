@@ -30,9 +30,9 @@ public class CardPlayer {
 	 */
 	public static final int POSITION_RIGHT = 2;
 
-	private List<CardLabel> cardList = new ArrayList<CardLabel>();
+	private List<CardLabel> cardHoldList = new ArrayList<CardLabel>();
 
-	private List<CardLabel> currentList = new ArrayList<CardLabel>();
+	private List<CardLabel> cardPublishList = new ArrayList<CardLabel>();
 
 	private Point point;
 
@@ -42,33 +42,33 @@ public class CardPlayer {
 
 	private boolean dizhu;
 
-	private JTextField timeFiled;
+	private JTextField clockFiled;
 
 	public CardPlayer(MainFrame frame, int role){
 		this.position = role;
 		this.frame = frame;
-		timeFiled = new JTextField("倒计时:");
-		timeFiled.setVisible(false);
+		clockFiled = new JTextField("倒计时:");
+		clockFiled.setVisible(false);
 		switch(role){
 		case POSITION_LEFT:
 			point = new Point(80,20);
-			timeFiled.setBounds(140, 230, 60, 20);
+			clockFiled.setBounds(140, 230, 60, 20);
 			break;
 		case POSITION_PLAYER:
 			point = new Point(80,430);
-			timeFiled.setBounds(374, 360, 60, 20);
+			clockFiled.setBounds(374, 360, 60, 20);
 			break;
 		case POSITION_RIGHT:
 			point = new Point(700,20);
-			timeFiled.setBounds(620, 230, 60, 20);
+			clockFiled.setBounds(620, 230, 60, 20);
 			break;
 		default:;
 		}
-		frame.container.add(timeFiled);
+		frame.container.add(clockFiled);
 	}
 
 	public void order(){
-		Collections.sort(cardList,new Comparator<CardLabel>() {
+		Collections.sort(cardHoldList,new Comparator<CardLabel>() {
 			@Override
 			public int compare(CardLabel c1, CardLabel c2) {
 				return c2.singleValue() - c1.singleValue();
@@ -81,21 +81,21 @@ public class CardPlayer {
 		switch(position){
 		case POSITION_LEFT:
 			point.x=50;
-			point.y=(450/2)-(cardList.size()+1)*15/2;
+			point.y=(450/2)-(cardHoldList.size()+1)*15/2;
 			break;
 		case POSITION_PLAYER:
-			point.x=(800/2)-(cardList.size()+1)*21/2;
+			point.x=(800/2)-(cardHoldList.size()+1)*21/2;
 			point.y=450;
 			break;
 		case POSITION_RIGHT:
 			point.x=700;
-			point.y=(450/2)-(cardList.size()+1)*15/2;
+			point.y=(450/2)-(cardHoldList.size()+1)*15/2;
 			break;
 		default:;
 		}
-		int len=cardList.size();
+		int len=cardHoldList.size();
 		for(int i=0;i<len;i++){
-			CardLabel card=cardList.get(i);
+			CardLabel card=cardHoldList.get(i);
 			card.move(point);
 			frame.container.setComponentZOrder(card, 0);
 			if(position==1)point.x+=21;
@@ -105,8 +105,8 @@ public class CardPlayer {
 
 	public int getScore(){
 		int score=0;
-		for(int i=0,len=cardList.size();i<len;i++){
-			CardLabel card=cardList.get(i);
+		for(int i=0,len=cardHoldList.size();i<len;i++){
+			CardLabel card=cardHoldList.get(i);
 			if(card.getName().substring(0, 1).equals("5")){
 				score+=5;
 			}
@@ -117,12 +117,113 @@ public class CardPlayer {
 		return score;
 	}
 
+
 	public void publishCard() {
-		Model model = Common.getModel(cardList);
+		if(position == POSITION_PLAYER) {
+			playerPublish();
+		}else {
+			conputerPublish();
+		}
+	}
+
+	private void playerPublish() {
+		List<CardLabel> publishCards = new ArrayList<CardLabel>();
+		for(CardLabel card : cardHoldList) {
+			if(card.isClicked()){
+				publishCards.add(card);
+			}
+		}
+		
+		boolean flag=false;
+		if(frame.getPlayer(CardPlayer.POSITION_LEFT).getClockFiled().getText().equals("不要") 
+				&& frame.getPlayer(CardPlayer.POSITION_RIGHT).getClockFiled().getText().equals("不要")){
+			if(CardType.getType(publishCards)!=CardType.T0)
+				flag=true;//表示可以出牌
+		}else{
+			flag=checkCards(publishCards);
+		}
+
+		if(flag){
+			cardPublishList = publishCards;
+			cardHoldList.removeAll(publishCards);
+
+			Point point=new Point();
+			point.x=(770/2)-(publishCards.size()+1)*15/2;;
+			point.y=300;
+			for(int i=0,len=publishCards.size();i<len;i++){
+				publishCards.get(i).move(point);
+				point.x+=15;
+			}
+
+			resetPosition();
+			clockFiled.setVisible(false);
+			frame.setNextPlayer(true);
+		}
+	}
+
+	//检查牌的是否能出
+	private  boolean checkCards(List<CardLabel> c){
+		//找出当前最大的牌是哪个电脑出的,c是点选的牌
+		List<CardLabel> currentlist = frame.getPlayer(CardPlayer.POSITION_LEFT).getCardPublishList();
+		if(currentlist.isEmpty()){
+			currentlist = frame.getPlayer(CardPlayer.POSITION_RIGHT).getCardPublishList();
+		}
+
+		int cType=CardType.getType(c);
+		//如果张数不同直接过滤
+		if(cType!=CardType.T4&&c.size()!=currentlist.size())
+			return false;
+		//比较我的出牌类型
+		if(CardType.getType(c)!= CardType.getType(currentlist))
+		{
+
+			return false;
+		}
+		//比较出的牌是否要大
+		//王炸弹
+		if(cType==CardType.T4)
+		{
+			if(c.size()==2)
+				return true;
+			if(currentlist.size()==2)
+				return false;
+		}
+		//单牌,对子,3带,4炸弹
+		if(cType==CardType.T1||cType==CardType.T2||cType==CardType.T3||cType==CardType.T4){
+			if(c.get(0).singleValue() <= currentlist.get(0).singleValue())
+			{
+				return false;
+			}else {
+				return true;
+			}
+		}
+		//顺子,连队，飞机裸
+		if(cType==CardType.T123||cType==CardType.T1122||cType==CardType.T111222)
+		{
+			if(c.get(0).value() <= currentlist.get(0).value())
+				return false;
+			else 
+				return true;
+		}
+		//按重复多少排序
+		//3带1,3带2 ,飞机带单，双,4带1,2,只需比较第一个就行，独一无二的 
+		if(cType==CardType.T31||cType==CardType.T32||cType==CardType.T411||cType==CardType.T422
+				||cType==CardType.T11122234||cType==CardType.T1112223344){
+			List<CardLabel> a1=Common.getOrder2(c); //我出的牌
+			List<CardLabel> a2=Common.getOrder2(currentlist);//当前最大牌
+			if(a1.get(0).value() < a2.get(0).value())
+				return false;
+		}
+		return true;
+	}
+
+
+	private void conputerPublish() {
+		Model model = Common.getModel(cardHoldList);
 		List<String> publishCardList = new ArrayList<String>();
 		// 主动出牌
-		if (frame.getPlayer((position + 1) % 3).getTimeFiled().getText().equals("不要")
-				&& frame.getPlayer((position + 2) % 3).getTimeFiled().getText().equals("不要")) {
+		if (frame.getPlayer((position + 1) % 3).getClockFiled().getText().equals("不要")
+				&& frame.getPlayer((position + 2) % 3).getClockFiled().getText().equals("不要")) {
 			// 有单出单 (除开3带，飞机能带的单牌)
 			if (model.a1.size() > (model.a111222.size() * 2 + model.a3.size())) {
 				publishCardList.add(model.a1.get(model.a1.size() - 1));
@@ -185,9 +286,9 @@ public class CardPlayer {
 		else {
 			CardPlayer prePlayer = frame.getPlayer((position + 2) % 3);
 			CardPlayer nextPlayer = frame.getPlayer((position + 1) % 3);
-			List<CardLabel> cardList = prePlayer.getCurrentList();
+			List<CardLabel> cardList = prePlayer.getCardPublishList();
 			if(cardList.isEmpty()){
-				cardList = nextPlayer.getCurrentList();
+				cardList = nextPlayer.getCardPublishList();
 			}
 
 			switch(CardType.getType(cardList)) {
@@ -225,7 +326,7 @@ public class CardPlayer {
 		}
 
 		// 定位出牌
-		currentList.clear();
+		cardPublishList.clear();
 		if (publishCardList.size() > 0) {
 			Point point = new Point();
 			if (position == 0)
@@ -235,20 +336,20 @@ public class CardPlayer {
 			point.y = (400 / 2) - (publishCardList.size() + 1) * 15 / 2;
 			// 将name转换成Card
 			for (int i = 0, len = publishCardList.size(); i < len; i++) {
-				List<CardLabel> cards = getCardByName(cardList,publishCardList.get(i));
+				List<CardLabel> cards = getCardByName(cardHoldList,publishCardList.get(i));
 				for (CardLabel card : cards) {
 					card.move(point);
 					point.y += 15;
-					currentList.add(card);
-					cardList.remove(card);
+					cardPublishList.add(card);
+					cardHoldList.remove(card);
 				}
 			}
 			resetPosition();
 		} else {
-			frame.getPlayer(position).getTimeFiled().setVisible(true);
-			frame.getPlayer(position).getTimeFiled().setText("不要");
+			frame.getPlayer(position).getClockFiled().setVisible(true);
+			frame.getPlayer(position).getClockFiled().setText("不要");
 		}
-		for(CardLabel card : currentList){
+		for(CardLabel card : cardPublishList){
 			card.turnUp();
 		}
 	}
