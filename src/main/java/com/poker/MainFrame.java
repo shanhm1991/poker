@@ -76,11 +76,15 @@ public class MainFrame extends JFrame {
 
 		player.getClockFiled().setVisible(true);
 		
+		
+		run();
+		
+		
 		//线程安全性,把非主线程的UI控制放到里面
 		SwingUtilities.invokeLater(new NewTimer(this,10));
 	}
 
-	public void init() {
+	private void init() {
 		container = this.getContentPane();
 		container.setLayout(null);
 		container.setBackground(new Color(0, 112, 26)); 
@@ -150,7 +154,6 @@ public class MainFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				player.publishCard();
-//				playPublish();
 			}
 		});
 		container.add(publishButton);
@@ -176,10 +179,7 @@ public class MainFrame extends JFrame {
 		rightConputer = new CardPlayer(this,CardPlayer.POSITION_RIGHT);
 	}
 
-	/**
-	 * 发牌
-	 */
-	public void initCard() {
+	private void initCard() {
 		CardLabel card[] = new CardLabel[56];
 		int count = 1;
 		for (int i = 1; i <= 5; i++) {
@@ -242,6 +242,15 @@ public class MainFrame extends JFrame {
 		competeButton.setVisible(true);
 		notCompeteButton.setVisible(true);
 	}
+	
+	private void run(){
+		
+	}
+	
+	
+	
+	
+	
 
 	private void notPublish(){
 		nextPlayer=true;
@@ -265,15 +274,6 @@ public class MainFrame extends JFrame {
 			return null;
 		}
 	}
-
-
-	public static void main(String args[]) {
-
-		new MainFrame();
-
-	}
-
-
 
 }
 

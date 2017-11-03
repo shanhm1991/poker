@@ -133,7 +133,7 @@ public class CardPlayer {
 				publishCards.add(card);
 			}
 		}
-		
+
 		boolean flag=false;
 		if(frame.getPlayer(CardPlayer.POSITION_LEFT).getClockFiled().getText().equals("不要") 
 				&& frame.getPlayer(CardPlayer.POSITION_RIGHT).getClockFiled().getText().equals("不要")){
@@ -209,8 +209,8 @@ public class CardPlayer {
 		//3带1,3带2 ,飞机带单，双,4带1,2,只需比较第一个就行，独一无二的 
 		if(cType==CardType.T31||cType==CardType.T32||cType==CardType.T411||cType==CardType.T422
 				||cType==CardType.T11122234||cType==CardType.T1112223344){
-			List<CardLabel> a1=Common.getOrder2(c); //我出的牌
-			List<CardLabel> a2=Common.getOrder2(currentlist);//当前最大牌
+			List<CardLabel> a1=getOrder2(c); //我出的牌
+			List<CardLabel> a2=getOrder2(currentlist);//当前最大牌
 			if(a1.get(0).value() < a2.get(0).value())
 				return false;
 		}
@@ -219,7 +219,7 @@ public class CardPlayer {
 
 
 	private void conputerPublish() {
-		Model model = Common.getModel(cardHoldList);
+		Model model = getModel(cardHoldList);
 		List<String> publishCardList = new ArrayList<String>();
 		// 主动出牌
 		if (frame.getPlayer((position + 1) % 3).getClockFiled().getText().equals("不要")
@@ -354,6 +354,19 @@ public class CardPlayer {
 		}
 	}
 
+	private Model getModel(List<CardLabel> list){
+		List<CardLabel> list2=new ArrayList<CardLabel>(list);
+		Model model=new Model();
+		CardType.getT4(list2, model); 
+		CardType.getT3(list2, model);
+		CardType.getT111222(list2, model);
+		CardType.getT2(list2, model);
+		CardType.getT1122(list2, model);
+		CardType.getT123(list2, model);
+		CardType.getT1(list2, model);
+		return model;
+	}
+
 	private List<CardLabel> getCardByName(List<CardLabel> list, String n) {
 		String[] name = n.split(",");
 		List<CardLabel> cardsList = new ArrayList<CardLabel>();
@@ -392,7 +405,7 @@ public class CardPlayer {
 	private void AI_2(List<String> model1,List<String> model2,List<CardLabel> player,List<String> list){
 		//model1是主牌,model2是带牌,player是玩家出的牌,,list是准备回的牌
 		//排序按重复数
-		player=Common.getOrder2(player);
+		player=getOrder2(player);
 		int len1=model1.size();
 		int len2=model2.size();
 		//如果有王直接炸了
@@ -432,7 +445,7 @@ public class CardPlayer {
 	//4带1，2
 	private void AI_5(List<String> model1,List<String> model2,List<CardLabel> player,List<String> list,int role){
 		//排序按重复数
-		player=Common.getOrder2(player);
+		player=getOrder2(player);
 		int len1=model1.size();
 		int len2=model2.size();
 
@@ -465,7 +478,7 @@ public class CardPlayer {
 	//飞机带单，双
 	private void AI_4(List<String> model1,List<String> model2,List<CardLabel> player,List<String> list,int role){
 		//排序按重复数
-		player=Common.getOrder2(player);
+		player=getOrder2(player);
 		int len1=model1.size();
 		int len2=model2.size();
 
@@ -481,5 +494,36 @@ public class CardPlayer {
 					list.add(model2.get(len2-j));
 			}
 		}
+	}
+
+	//按照重复次数排序
+	private List<CardLabel> getOrder2(List<CardLabel> list){
+		List<CardLabel> list2=new ArrayList<CardLabel>(list);
+		List<CardLabel> list3=new ArrayList<CardLabel>();
+		int len=list2.size();
+		int a[]=new int[20];
+		for(int i=0;i<20;i++)
+			a[i]=0;
+		for(int i=0;i<len;i++)
+		{
+			a[list2.get(i).value()]++;
+		}
+		int max=0;
+		for(int i=0;i<20;i++){
+			max=0;
+			for(int j=19;j>=0;j--){
+				if(a[j]>a[max])
+					max=j;
+			}
+
+			for(int k=0;k<len;k++){
+				if(list2.get(k).value() == max){
+					list3.add(list2.get(k));
+				}
+			}
+			list2.remove(list3);
+			a[max]=0;
+		}
+		return list3;
 	}
 }

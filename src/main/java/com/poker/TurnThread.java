@@ -169,9 +169,13 @@ public class TurnThread extends Thread {
 	// 延时，模拟时钟
 	public void timeWait(int n, int position) {
 		List<CardLabel> cardList = main.getPlayer(position).getCardPublishList();
+		
+		
 
 		if (cardList.size() > 0)
-			Common.hideCards(cardList);
+			hideCards(cardList);
+		
+		
 		if (position == 1)// 如果是我，10秒到后直接下一家出牌
 		{
 			int i = n;
@@ -196,6 +200,12 @@ public class TurnThread extends Thread {
 			}
 		}
 		main.getPlayer(position).getClockFiled().setVisible(false);
+	}
+	
+	private void hideCards(List<CardLabel> list){
+		for(int i=0,len=list.size();i<len;i++){
+			list.get(i).setVisible(false);
+		}
 	}
 
 	//判断输赢
