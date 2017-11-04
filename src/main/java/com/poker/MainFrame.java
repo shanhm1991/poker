@@ -10,14 +10,16 @@ import java.util.List;
 import java.util.Random;
 
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+
+import com.poker.player.CardPlayer;
+import com.poker.player.PlayerConputer;
+import com.poker.player.PlayerUser;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,6 +30,10 @@ public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = -2875228669172807387L;
 
+	private volatile int competeSeconds = 10;
+
+	private volatile boolean completeEnd = false;
+
 	public Container container = null;
 
 	private JMenuItem start;
@@ -36,21 +42,13 @@ public class MainFrame extends JFrame {
 
 	private JMenuItem about;
 
-	private JButton competeButton;
+	private JLabel lordLabel; 
 
-	private JButton notCompeteButton;
+	private int publishTurn;
 
-	private JButton publishButton;
+	private int lordPosition;
 
-	private JButton notPublishButton;
-	
-	private JLabel dizhuLabel; 
-
-	private int turn;
-	
-	private int dizhuPosition;
-
-	private CardPlayer player;
+	private CardPlayer userPlayer;
 
 	private CardPlayer leftConputer;
 
@@ -58,45 +56,37 @@ public class MainFrame extends JFrame {
 
 	private List<CardLabel> lordCardList;
 
-	TurnThread turnThread; 
+	boolean nextPlayer = false;
 
-	boolean nextPlayer=false; //转换角色
-
-	public MainFrame(){
+	public MainFrame() throws InterruptedException{ 
 		setSize(830, 620);
 		setVisible(true);
 		setResizable(false);
 		setLocationRelativeTo(getOwner());
 		setTitle("斗地主 - shanhm1991@163.com");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		init();
-
+		initFrame();
+		userPlayer = new PlayerUser(this,CardPlayer.POSITION_USER);
+		leftConputer = new PlayerConputer(this,CardPlayer.POSITION_LEFT);
+		rightConputer = new PlayerConputer(this,CardPlayer.POSITION_RIGHT);
 		initCard();
 
-		player.getClockFiled().setVisible(true);
+//		compete();
 		
-		
-		run();
-		
-		
-		//线程安全性,把非主线程的UI控制放到里面
-		SwingUtilities.invokeLater(new NewTimer(this,10));
+//		publish();
 	}
 
-	private void init() {
+	private void initFrame() {
 		container = this.getContentPane();
 		container.setLayout(null);
 		container.setBackground(new Color(0, 112, 26)); 
-
 		start = new JMenuItem("新游戏");
 		start.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// this.restart();
+				System.out.println(1);
 			}
 		});
-
 		exit = new JMenuItem("退出");
 		exit.addActionListener(new ActionListener(){
 			@Override
@@ -104,7 +94,6 @@ public class MainFrame extends JFrame {
 				dispose();
 			}
 		});
-
 		about = new JMenuItem("关于");
 		about.addActionListener(new ActionListener(){
 			@Override
@@ -112,7 +101,6 @@ public class MainFrame extends JFrame {
 				showAbout();
 			}
 		});
-
 		JMenu gameMenu = new JMenu("游戏");
 		gameMenu.add(start);
 		gameMenu.add(exit);
@@ -122,63 +110,15 @@ public class MainFrame extends JFrame {
 		menu.add(gameMenu);
 		menu.add(helpMenu);
 		this.setJMenuBar(menu);
-
-		competeButton = new JButton("抢地主");
-		competeButton.setVisible(false);
-		competeButton.setBounds(320, 400,75,20);
-		competeButton.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				player.getClockFiled().setText("抢地主");
-				turnThread.isRun=false; 
-			}
-		});
-		container.add(competeButton);
-
-		notCompeteButton = new JButton("不  抢");
-		notCompeteButton.setVisible(false);
-		notCompeteButton.setBounds(420, 400,75,20);
-		notCompeteButton.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				player.getClockFiled().setText("不抢");
-				turnThread.isRun=false; 
-			}
-		});
-		container.add(notCompeteButton);
-
-		publishButton= new JButton("出牌");
-		publishButton.setVisible(false);
-		publishButton.setBounds(320, 400, 60, 20);
-		publishButton.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				player.publishCard();
-			}
-		});
-		container.add(publishButton);
-
-		notPublishButton= new JButton("不要");
-		notPublishButton.setVisible(false);
-		notPublishButton.setBounds(420, 400, 60, 20);
-		notPublishButton.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				notPublish();
-			}
-		});
-		container.add(notPublishButton);
-
-		dizhuLabel=new JLabel(new ImageIcon("images/dizhu.gif"));
-		dizhuLabel.setVisible(false);
-		dizhuLabel.setSize(40, 40);
-		container.add(dizhuLabel);
-
-		player = new CardPlayer(this,CardPlayer.POSITION_PLAYER);
-		leftConputer = new CardPlayer(this,CardPlayer.POSITION_LEFT);
-		rightConputer = new CardPlayer(this,CardPlayer.POSITION_RIGHT);
+		lordLabel=new JLabel(new ImageIcon("images/dizhu.gif"));
+		lordLabel.setVisible(false);
+		lordLabel.setSize(40, 40);
+		container.add(lordLabel);
 	}
 
+	/**
+	 * 发牌
+	 */
 	private void initCard() {
 		CardLabel card[] = new CardLabel[56];
 		int count = 1;
@@ -187,14 +127,13 @@ public class MainFrame extends JFrame {
 				if ((i == 5) && (j > 2))
 					break;
 				else {
-					card[count] = new CardLabel(this, i + "-" + j, false);
+					card[count] = new CardLabel(this, i + "-" + j,true);
 					card[count].setLocation(350, 50);
 					container.add(card[count]);
 					count++;
 				}
 			}
 		}
-		//打乱顺序
 		for(int i=0;i<100;i++){
 			Random random=new Random();
 			int a=random.nextInt(54)+1;
@@ -203,7 +142,6 @@ public class MainFrame extends JFrame {
 			card[a] = card[b];
 			card[b] = k;
 		}
-
 		lordCardList=new ArrayList<CardLabel>();
 		int t=0;
 		for(int i=1;i<=54;i++){
@@ -212,7 +150,6 @@ public class MainFrame extends JFrame {
 				lordCardList.add(card[i]);
 				continue;
 			}
-
 			switch ((t++)%3) {
 			case 0:
 				card[i].move(new Point(50,60+i*5));
@@ -220,8 +157,8 @@ public class MainFrame extends JFrame {
 				break;
 			case 1:
 				card[i].move(new Point(180+i*7,450));
-				player.getCardHoldList().add(card[i]);
-				card[i].turnUp(); 
+				userPlayer.getCardHoldList().add(card[i]);
+				card[i].show(); 
 				break;
 			case 2:
 				card[i].move(new Point(700,60+i*5));
@@ -230,65 +167,89 @@ public class MainFrame extends JFrame {
 			}
 			container.setComponentZOrder(card[i], 0);
 		}
-
-		player.order();
-		leftConputer.order();
-		rightConputer.order();
-
-		leftConputer.resetPosition();
-		rightConputer.resetPosition();
-		player.resetPosition();
 		
-		competeButton.setVisible(true);
-		notCompeteButton.setVisible(true);
-	}
-	
-	private void run(){
 		
-	}
-	
-	
-	
-	
-	
-
-	private void notPublish(){
-		nextPlayer=true;
-		player.getCardPublishList().clear();
-		player.getClockFiled().setText("不要");
-	}
-
-	private void showAbout(){
-		JOptionPane.showMessageDialog(this, "version 1.0  by牧风-shanhm1991@163.com");
+		
+		
+		
+//		userPlayer.order();
+//		userPlayer.resetPosition();
+//		leftConputer.order();
+//		leftConputer.resetPosition();
+//		rightConputer.order();
+//		rightConputer.resetPosition();
+		
+//		userPlayer.enableClickCard();
 	}
 
-	public CardPlayer getPlayer(int role){
-		switch(role){
+	/**
+	 * 抢地主
+	 */
+	private void compete() throws InterruptedException{
+		int startPosition = 1; //new SecureRandom().nextInt(3);
+		for(int i = startPosition; ;i++){
+			CardPlayer player = getPlayer(i % 3);
+			player.complete();
+			if(player.isLord()){
+				lordPosition = player.getPosition();
+				System.out.println(lordPosition);
+				break;
+			}
+		}
+		showCards(lordCardList);
+		Thread.sleep(2000);
+		CardPlayer lord = getPlayer(lordPosition);
+		lord.getCardHoldList().addAll(lordCardList);
+		lord.order();
+		lord.resetPosition();
+		lordLabel.setLocation(lord.getLordPoint()); 
+		lordLabel.setVisible(true); 
+		lord.getClockFiled().setVisible(true);
+	}
+	
+	/**
+	 * 出牌
+	 */
+	private void publish(){ //TODO
+		publishTurn = lordPosition - 1;
+		while (true) {
+			CardPlayer player = getPlayer((++publishTurn) % 3);
+			player.publish();
+			if(player.getCardHoldList().isEmpty()){
+				if(player.getPosition() == CardPlayer.POSITION_USER){
+					JOptionPane.showMessageDialog(this, "you win!");
+				}else{
+					JOptionPane.showMessageDialog(this, "you loss!");
+				}
+				
+			}
+		}
+	}
+
+	public CardPlayer getPlayer(int position){
+		switch(position){
 		case CardPlayer.POSITION_LEFT:
 			return leftConputer;
-		case CardPlayer.POSITION_PLAYER:
-			return player;
+		case CardPlayer.POSITION_USER:
+			return userPlayer;
 		case CardPlayer.POSITION_RIGHT:
 			return rightConputer;
 		default:
 			return null;
 		}
 	}
-
-}
-
-class NewTimer implements Runnable{
-
-	MainFrame main;
-	int i;
-	public NewTimer(MainFrame m,int i){
-		this.main=m;
-		this.i=i;
-	}
-	@Override
-	public void run() {
-		main.turnThread=new TurnThread(main,10);
-		main.turnThread.start();
+	
+	private void showCards(List<CardLabel> cardList){
+		for(CardLabel card : cardList){
+			card.show();
+		}
 	}
 
+	private void showAbout(){
+		JOptionPane.showMessageDialog(this, "version 1.0  by牧风-shanhm1991@163.com");
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+		new MainFrame();
+	}
 }
