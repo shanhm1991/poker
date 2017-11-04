@@ -68,7 +68,7 @@ public class CardPlayer {
 		});
 	}
 
-	public void complete() throws InterruptedException{
+	public void compete() throws InterruptedException{
 
 	}
 	
@@ -105,32 +105,31 @@ public class CardPlayer {
 		}
 	}
 	
+	/**
+	 * 时钟放在主线程中走
+	 */
 	protected void clock(final int seconds){
 		clockEnd = false;
-		clockThread = new Thread(){
-			public void run(){
-				int clockTime = seconds;
-				clockFiled.setVisible(true);
-				while(clockTime >= 0){
-					if(clockEnd){
-						clockFiled.setVisible(false);
-						return;
-					}
-					clockFiled.setText("倒计时:" + clockTime--);
-
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						clockFiled.setVisible(false);
-						return;
-					}
-				}
-
-				clockEnd = true;
+		int clockTime = seconds;
+		clockFiled.setVisible(true);
+		while(clockTime >= 0){
+			if(clockEnd){
+				System.out.println(clockEnd);
 				clockFiled.setVisible(false);
+				return;
 			}
-		};
-		clockThread.run();
+			clockFiled.setText("倒计时:" + clockTime--);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				if(clockEnd){
+					clockFiled.setVisible(false);
+					return;
+				}
+			}
+		}
+		clockEnd = true;
+		clockFiled.setVisible(false);
 	}
 	
 	protected int getType(List<CardLabel> cardList){

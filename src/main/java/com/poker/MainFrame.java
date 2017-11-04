@@ -173,10 +173,9 @@ public class MainFrame extends JFrame {
 		int startPosition = 1; 
 		for(int i = startPosition; ;i++){
 			CardPlayer player = getPlayer(i % 3);
-			player.complete();
+			player.compete();
 			if(player.isLord()){
 				lordPosition = player.getPosition();
-				System.out.println(lordPosition);
 				break;
 			}
 		}

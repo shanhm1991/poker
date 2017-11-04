@@ -102,7 +102,7 @@ public class CardType {
 			}
 		}
 		distinctList.addAll(listT1);
-		distinctList.addAll(listT1);
+		distinctList.addAll(listT2);
 		distinctList.addAll(listT3);
 		distinctList.addAll(listT4);
 	}

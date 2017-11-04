@@ -92,10 +92,10 @@ public class PlayerUser extends CardPlayer {
 	}
 
 	@Override
-	public void complete() throws InterruptedException{
+	public void compete() throws InterruptedException{
 		competeButton.setVisible(true);
 		notCompeteButton.setVisible(true);
-		clock(10);
+		clock(30);
 		while(!clockEnd){
 			//同步阻塞等待 TODO
 		}
@@ -113,7 +113,7 @@ public class PlayerUser extends CardPlayer {
 	public void publish(){
 		publishButton.setVisible(true);
 		notPublishButton.setVisible(true);
-		clock(15);//TODO
+		clock(15);
 	}
 
 	private void playerPublish() {
@@ -123,8 +123,10 @@ public class PlayerUser extends CardPlayer {
 				publishCards.add(card);
 			}
 		}
+		System.out.println(publishCards.size());
 		CardType ownType = new CardType(publishCards);
 		int ownType_T = getType(publishCards,ownType);
+		System.out.println(ownType_T);
 		if(ownType_T == CardType.T0){
 			return;
 		}
