@@ -11,26 +11,28 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(of = {"value"},callSuper = false)
+@EqualsAndHashCode(of = {"name"},callSuper = false)
 public class CardLabel extends JLabel {
 
 	private static final long serialVersionUID = -4590127474545680976L;
 
-	private final String name;
+	private  String name;
 	
-	private final Integer color;
+	private  final Integer color;
 
-	private final Integer value;
+	private  final Integer value;
 
-	private final Integer singleValue;
+	private  final Integer singleValue;
 	
-	private final Integer continueValue;
+	private  final Integer continueValue;
 
 	private MainFrame main;
 
 	private boolean clickable;
 
 	private boolean clicked;
+	
+	private final CardKey cardKey;
 
 	public CardLabel(MainFrame main,String name,boolean init){
 		this.name = name;
@@ -50,6 +52,7 @@ public class CardLabel extends JLabel {
 			singleValue = value;
 			continueValue = value;
 		}
+		cardKey = new CardKey(this);
 		if(init){
 			this.main = main;
 			setSize(71, 96);
@@ -75,6 +78,24 @@ public class CardLabel extends JLabel {
 				public void mouseEntered(MouseEvent e) {}
 				public void mouseExited(MouseEvent e) {}
 			});
+		}
+	}
+	
+	/**
+	 * 很想直接用card的value作为hash的因子，方便后面判断。
+	 * 但是会导致swing错乱，所以加了以value作为hash的CardKey类，并与Card互相持有引用。
+	 */
+	@Data
+	@EqualsAndHashCode(of = {"value"},callSuper = false)
+	public class CardKey{
+		
+		public CardLabel card;
+		
+		private  final Integer value;
+		
+		public CardKey(CardLabel card){
+			this.card = card;
+			value = card.getValue();
 		}
 	}
 

@@ -5,9 +5,10 @@ import java.awt.Container;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -70,10 +71,8 @@ public class MainFrame extends JFrame {
 		leftConputer = new PlayerConputer(this,CardPlayer.POSITION_LEFT);
 		rightConputer = new PlayerConputer(this,CardPlayer.POSITION_RIGHT);
 		initCard();
-
-//		compete();
-		
-//		publish();
+		compete();
+		publish();
 	}
 
 	private void initFrame() {
@@ -116,77 +115,62 @@ public class MainFrame extends JFrame {
 		container.add(lordLabel);
 	}
 
-	/**
-	 * 发牌
-	 */
-	private void initCard() {
-		CardLabel card[] = new CardLabel[56];
-		int count = 1;
+	private void initCard(){
+		List<CardLabel> cardList = new LinkedList<CardLabel>();
 		for (int i = 1; i <= 5; i++) {
 			for (int j = 1; j <= 13; j++) {
-				if ((i == 5) && (j > 2))
+				if ((i == 5) && (j > 2)){
 					break;
-				else {
-					card[count] = new CardLabel(this, i + "-" + j,true);
-					card[count].setLocation(350, 50);
-					container.add(card[count]);
-					count++;
 				}
+				CardLabel card = new CardLabel(this, i + "-" + j,true);
+				card.setLocation(350, 50);
+				container.add(card);
+				cardList.add(card);
 			}
 		}
 		for(int i=0;i<100;i++){
-			Random random=new Random();
-			int a=random.nextInt(54)+1;
-			int b=random.nextInt(54)+1;
-			CardLabel k = card[a];
-			card[a] = card[b];
-			card[b] = k;
+			SecureRandom random = new SecureRandom();
+			int index = random.nextInt(54);
+			CardLabel card = cardList.get(index);
+			cardList.set(index, cardList.get(0));
+			cardList.set(0, card);
 		}
-		lordCardList=new ArrayList<CardLabel>();
-		int t=0;
-		for(int i=1;i<=54;i++){
-			if(i>=52){
-				card[i].move(new Point(300+(i-52)*80,10));
-				lordCardList.add(card[i]);
+
+		lordCardList = new ArrayList<CardLabel>();
+		for(int i=0;i<cardList.size();i++){
+			CardLabel card = cardList.get(i);
+			if(i >= 51){
+				card.move(new Point(300 + (i - 51) * 80, 10));
+				lordCardList.add(card);
 				continue;
 			}
-			switch ((t++)%3) {
+			switch ((i)%3) {
 			case 0:
-				card[i].move(new Point(50,60+i*5));
-				leftConputer.getCardHoldList().add(card[i]);
+				card.move(new Point(50,60+i*5));
+				leftConputer.getCardHoldList().add(card);
 				break;
 			case 1:
-				card[i].move(new Point(180+i*7,450));
-				userPlayer.getCardHoldList().add(card[i]);
-				card[i].show(); 
+				card.move(new Point(180+i*7,450));
+				userPlayer.getCardHoldList().add(card);
+				card.show(); 
 				break;
 			case 2:
-				card[i].move(new Point(700,60+i*5));
-				rightConputer.getCardHoldList().add(card[i]);
+				card.move(new Point(700,60+i*5));
+				rightConputer.getCardHoldList().add(card);
 				break;
 			}
-			container.setComponentZOrder(card[i], 0);
+			container.setComponentZOrder(card, 0);
 		}
-		
-		
-		
-		
-		
-//		userPlayer.order();
-//		userPlayer.resetPosition();
-//		leftConputer.order();
-//		leftConputer.resetPosition();
-//		rightConputer.order();
-//		rightConputer.resetPosition();
-		
-//		userPlayer.enableClickCard();
+		userPlayer.order();
+		userPlayer.resetPosition();
+		leftConputer.order();
+		leftConputer.resetPosition();
+		rightConputer.order();
+		rightConputer.resetPosition();
 	}
 
-	/**
-	 * 抢地主
-	 */
 	private void compete() throws InterruptedException{
-		int startPosition = 1; //new SecureRandom().nextInt(3);
+		int startPosition = 1; 
 		for(int i = startPosition; ;i++){
 			CardPlayer player = getPlayer(i % 3);
 			player.complete();
@@ -196,7 +180,9 @@ public class MainFrame extends JFrame {
 				break;
 			}
 		}
-		showCards(lordCardList);
+		for(CardLabel card : lordCardList){
+			card.show();
+		}
 		Thread.sleep(2000);
 		CardPlayer lord = getPlayer(lordPosition);
 		lord.getCardHoldList().addAll(lordCardList);
@@ -206,11 +192,8 @@ public class MainFrame extends JFrame {
 		lordLabel.setVisible(true); 
 		lord.getClockFiled().setVisible(true);
 	}
-	
-	/**
-	 * 出牌
-	 */
-	private void publish(){ //TODO
+
+	private void publish(){
 		publishTurn = lordPosition - 1;
 		while (true) {
 			CardPlayer player = getPlayer((++publishTurn) % 3);
@@ -221,7 +204,6 @@ public class MainFrame extends JFrame {
 				}else{
 					JOptionPane.showMessageDialog(this, "you loss!");
 				}
-				
 			}
 		}
 	}
@@ -236,12 +218,6 @@ public class MainFrame extends JFrame {
 			return rightConputer;
 		default:
 			return null;
-		}
-	}
-	
-	private void showCards(List<CardLabel> cardList){
-		for(CardLabel card : cardList){
-			card.show();
 		}
 	}
 

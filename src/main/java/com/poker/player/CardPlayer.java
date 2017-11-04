@@ -4,9 +4,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JTextField;
 
@@ -20,7 +18,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(of = {"position"},callSuper = false)
 public class CardPlayer {
-
 	/**
 	 * 左手电脑
 	 */
@@ -80,49 +77,35 @@ public class CardPlayer {
 	}
 
 	public void resetPosition(){
-		Point point=new Point();
+		int point_x = 0;
+		int point_y = 0;
 		switch(position){
 		case POSITION_LEFT:
-			point.x=50;
-			point.y=(450/2)-(cardHoldList.size()+1)*15/2;
+			point_x = 50;
+			point_y = (450 / 2) - (cardHoldList.size() + 1) * 15 / 2;
 			break;
 		case POSITION_USER:
-			point.x=(800/2)-(cardHoldList.size()+1)*21/2;
-			point.y=450;
+			point_x = (800 / 2) - (cardHoldList.size() + 1) * 21 / 2;
+			point_y = 450;
 			break;
 		case POSITION_RIGHT:
-			point.x=700;
-			point.y=(450/2)-(cardHoldList.size()+1)*15/2;
+			point_x = 700;
+			point_y = (450 / 2) - (cardHoldList.size() + 1) * 15 / 2;
 			break;
 		default:;
 		}
-		int len=cardHoldList.size();
-		for(int i=0;i<len;i++){
+		for(int i = 0;i < cardHoldList.size();i++){
 			CardLabel card=cardHoldList.get(i);
-			card.move(point);
+			card.move(new Point(point_x,point_y));
 			frame.container.setComponentZOrder(card, 0);
 			if(position == POSITION_USER)
-				point.x+=21;
+				point_x += 21;
 			else 
-				point.y+=15;
+				point_y += 15;
 		}
 	}
-
-	public int getScore(){
-		int score=0;
-		for(int i=0,len=cardHoldList.size();i<len;i++){
-			CardLabel card=cardHoldList.get(i);
-			if(card.getName().substring(0, 1).equals("5")){
-				score+=5;
-			}
-			if(card.getName().substring(2, card.getName().length()).equals("2")){
-				score+=2;
-			}
-		}
-		return score;
-	}
-
-	public void clock(final int seconds){
+	
+	protected void clock(final int seconds){
 		clockEnd = false;
 		clockThread = new Thread(){
 			public void run(){
@@ -148,6 +131,113 @@ public class CardPlayer {
 			}
 		};
 		clockThread.run();
+	}
+	
+	protected int getType(List<CardLabel> cardList){
+		CardType type = new CardType(cardList);
+		return getType(cardList,type);
+	}
+	
+	protected int getType(List<CardLabel> cardList, CardType type){
+		int listSize = cardList.size();
+		int distinctSize = type.distinctList.size();
+		if(distinctSize == 1) {
+			switch(listSize) {
+			case 1:
+				return CardType.T1;
+			case 2:
+				return CardType.T2;
+			case 3:
+				return CardType.T3;
+			case 4:
+				return CardType.T4;
+			}
+			return CardType.T0;
+		}
+		if(type.listT4.size() > 0){
+			return CardType.T0;
+		}
+		if(distinctSize == 2){
+			if(cardList.get(0).getValue() > 50 && cardList.get(1).getValue() > 50){
+				return CardType.T4;
+			}
+			if(type.listT3.size() > 0){
+				switch(listSize) {
+				case 4:
+					return CardType.T31;
+				case 5:
+					return CardType.T32;
+				case 6:
+					return CardType.T33;
+				}
+			}
+			return CardType.T0;
+		}
+		if(listSize <= 4){
+			return CardType.T0;
+		}
+		//listSize > 4
+		//飞机
+		if(type.listT1.isEmpty() && type.listT2.isEmpty() && typeValue(type.listT3) != 0){ 
+			return CardType.T33;
+		}
+		//连对
+		if(type.listT1.isEmpty() && type.listT3.isEmpty() && typeValue(type.listT2) != 0){
+			return CardType.T22;
+		}
+		//顺子
+		if(type.listT2.isEmpty() && type.listT3.isEmpty() && typeValue(type.listT1) != 0){
+			return CardType.T123;
+		}
+		//飞机带单
+		if(type.listT3.size() == type.listT1.size() && type.listT2.isEmpty() && typeValue(type.listT3) != 0){
+			return CardType.T3312;
+
+		}
+		//飞机带双
+		if(type.listT3.size() == type.listT2.size() && type.listT1.isEmpty() && typeValue(type.listT3) != 0){
+			return CardType.T3322;
+		}
+		return CardType.T0;
+	}
+	
+	protected int typeValue(List<CardLabel> list){
+		Collections.sort(list,new Comparator<CardLabel>() {
+			@Override
+			public int compare(CardLabel c1, CardLabel c2) {
+				return c2.getValue() - c1.getValue();
+			}
+		});
+		if(list.get(0).getValue() - list.get(list.size() - 1).getValue() == list.size() - 1){
+			return list.get(0).getValue();
+		}
+		//A字顺 TODO
+		if(list.contains(new CardLabel(null,"1-1",false))){
+			Collections.sort(list,new Comparator<CardLabel>() {
+				@Override
+				public int compare(CardLabel c1, CardLabel c2) {
+					return c2.getContinueValue() - c1.getContinueValue();
+				}
+			});
+			if(list.get(0).getValue() - list.get(list.size() - 1).getValue() == list.size() - 1){
+				return list.get(0).getValue();
+			}
+		}
+		return 0;
+	}
+
+	public int getScore(){
+		int score=0;
+		for(int i=0,len=cardHoldList.size();i<len;i++){
+			CardLabel card=cardHoldList.get(i);
+			if(card.getName().substring(0, 1).equals("5")){
+				score+=5;
+			}
+			if(card.getName().substring(2, card.getName().length()).equals("2")){
+				score+=2;
+			}
+		}
+		return score;
 	}
 
 	//按照重复次数排序
@@ -180,110 +270,4 @@ public class CardPlayer {
 		}
 		return list3;
 	}
-
-	public static int getType(List<CardLabel> cardList){
-		Map<CardLabel,Integer> cardMap = new HashMap<CardLabel,Integer>();
-		for(CardLabel card : cardList){
-			Integer count = cardMap.get(card);
-			if(count == null){
-				cardMap.put(card, 1);
-			}else{
-				cardMap.put(card, ++count);
-			}
-		} 
-		int mapSize = cardMap.size();
-		int listSize = cardList.size();
-		if(mapSize == 1) {
-			switch(listSize) {
-			case 1:
-				return CardType.T1;
-			case 2:
-				return CardType.T2;
-			case 3:
-				return CardType.T3;
-			case 4:
-				return CardType.T4;
-			}
-			return CardType.T0;
-		}
-		if(cardMap.containsValue(4)){
-			return CardType.T0;
-		}
-		//mapSize > 1
-		if(mapSize == 2){
-			if(cardList.get(0).getValue() > 50 && cardList.get(1).getValue() > 50){
-				return CardType.T4;
-			}
-			if(cardMap.containsValue(3)){
-				switch(listSize) {
-				case 4:
-					return CardType.T31;
-				case 5:
-					return CardType.T32;
-				case 6:
-					return CardType.T33;
-				}
-			}
-			return CardType.T0;
-		}
-		if(listSize <= 5){
-			return CardType.T0;
-		}
-		//listSize > 4
-		CardType type = new CardType();
-		type.listType(cardList); 
-		//飞机
-		if(type.listT1.isEmpty() && type.listT2.isEmpty() && type.cValue(type.listT3) != 0){ 
-			return CardType.T33;
-		}
-		//连对
-		if(type.listT1.isEmpty() && type.listT3.isEmpty() && type.cValue(type.listT2) != 0){
-			return CardType.T22;
-		}
-		//顺子
-		if(type.listT2.isEmpty() && type.listT3.isEmpty() && type.cValue(type.listT1) != 0){
-			return CardType.T123;
-		}
-		//飞机带单
-		if(type.listT3.size() == type.listT1.size() && type.listT2.isEmpty() && type.cValue(type.listT3) != 0){
-			return CardType.T3312;
-
-		}
-		//飞机带双
-		if(type.listT3.size() == type.listT2.size() && type.listT1.isEmpty() && type.cValue(type.listT3) != 0){
-			return CardType.T3322;
-		}
-		return CardType.T0;
-	}
-
-	public static boolean compare(List<CardLabel> ownList,List<CardLabel> otherList){
-		int ownType = getType(ownList);
-		int otherType = getType(ownList);
-		if(ownType == CardType.T4){
-			if(ownList.size() == 2 || otherType != CardType.T4){
-				return true;
-			}
-			if(otherList.size() == 2){//size=2是王炸
-				return false;
-			}
-			return ownList.get(0).getSingleValue() > otherList.get(0).getSingleValue();
-		}
-		if(ownList.size() != otherList.size() || ownType != otherType){
-			return false;
-		}
-
-
-		if(ownType == CardType.T1 || ownType==CardType.T2 || ownType==CardType.T3
-				|| ownType == CardType.T123 || ownType == CardType.T22 || ownType == CardType.T33){
-			return ownList.get(0).getSingleValue() > otherList.get(0).getSingleValue();
-		}
-		if(ownType == CardType.T31 || ownType == CardType.T32
-				|| ownType == CardType.T3312 || ownType == CardType.T3322){
-
-
-			return false;
-		}
-		return false;
-	}
-
 }

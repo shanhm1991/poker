@@ -12,6 +12,11 @@ import com.poker.CardLabel;
 import com.poker.CardType;
 import com.poker.MainFrame;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class PlayerUser extends CardPlayer {
 
 	private JButton competeButton;
@@ -81,9 +86,9 @@ public class PlayerUser extends CardPlayer {
 	@Override
 	public void order(){
 		super.order();
-//		for(CardLabel card : cardHoldList){
-//			card.setClickable(true); 
-//		}
+		for(CardLabel card : cardHoldList){
+			card.setClickable(true); 
+		}
 	}
 
 	@Override
@@ -118,12 +123,14 @@ public class PlayerUser extends CardPlayer {
 				publishCards.add(card);
 			}
 		}
+		CardType ownType = new CardType(publishCards);
+		int ownType_T = getType(publishCards,ownType);
+		if(ownType_T == CardType.T0){
+			return;
+		}
 		//主动出牌或者跟牌
-		if ((frame.getPlayer((position + 1) % 3).isClockEnd()
-				&& frame.getPlayer((position + 2) % 3).isClockEnd()
-				&& getType(publishCards) != CardType.T0)
-				|| checkCards(publishCards)){
-
+		if ((frame.getPlayer((position + 1) % 3).isClockEnd() && frame.getPlayer((position + 2) % 3).isClockEnd())
+				|| compareConputer(publishCards,ownType,ownType_T)){
 			Point point=new Point();
 			point.x=(770/2)-(publishCards.size()+1)*15/2;;
 			point.y=300;
@@ -137,57 +144,44 @@ public class PlayerUser extends CardPlayer {
 			clockFiled.setVisible(false);
 		}
 	}
-
-	private  boolean checkCards(List<CardLabel> ownList){
+	
+	private boolean compareConputer(List<CardLabel> ownList,CardType ownType,int ownType_T){
 		List<CardLabel> otherList = frame.getPlayer((position + 2) % 3).getCardPublishList();
 		if(otherList.isEmpty()){
 			otherList = frame.getPlayer((position + 1) % 3).getCardPublishList();
 		}
-
-		compare(ownList, otherList);
-
-		int ownType=getType(ownList);
-
-		//牌不一样且不是炸弹，或者牌型不一样
-		if((ownList.size() != otherList.size() && ownType!=CardType.T4)
-				|| getType(ownList) != getType(otherList)){
-			return false;
-		}
-
-		//王炸弹
-		if(ownType == CardType.T4){
-			if(ownList.size()==2)
-				return true;
-			if(otherList.size()==2)
-				return false;
-		}
-		//单牌,对子,3带,4炸弹
-		if(ownType==CardType.T1||ownType==CardType.T2||ownType==CardType.T3||ownType==CardType.T4){
-			if(ownList.get(0).getSingleValue() <= otherList.get(0).getSingleValue())
-			{
-				return false;
-			}else {
+		CardType otherType = new CardType(ownList);
+		int otherType_T = getType(ownList,otherType);
+		//有炸弹
+		if(ownType_T == CardType.T4){
+			if(ownList.size() == 2 || otherType_T != CardType.T4){
 				return true;
 			}
-		}
-		//顺子,连队，飞机裸
-		if(ownType==CardType.T123||ownType==CardType.T22||ownType==CardType.T33)
-		{
-			if(ownList.get(0).getValue() <= otherList.get(0).getValue())
+			if(otherList.size() == 2){//size=2是王炸
 				return false;
-			else 
-				return true;
+			}
+			return ownList.get(0).getSingleValue() > otherList.get(0).getSingleValue();
 		}
-		//按重复多少排序
-		//3带1,3带2 ,飞机带单，双,4带1,2,只需比较第一个就行，独一无二的 
-		if(ownType==CardType.T31||ownType==CardType.T32
-				||ownType==CardType.T3312||ownType==CardType.T3322){
-			List<CardLabel> a1=getOrder2(ownList); //我出的牌
-			List<CardLabel> a2=getOrder2(otherList);//当前最大牌
-			if(a1.get(0).getValue() < a2.get(0).getValue())
-				return false;
+		//牌数或牌种不同
+		if(ownList.size() != otherList.size() || ownType_T != otherType_T){
+			return false;
 		}
-		return true;
+		//ownList.size=otherList.size、ownType=otherType
+		if(ownType_T == CardType.T1 || ownType_T==CardType.T2 || ownType_T==CardType.T3){
+			return ownList.get(0).getSingleValue() > otherList.get(0).getSingleValue();
+		}
+		if(ownType_T == CardType.T123){
+			return typeValue(ownType.listT1) > typeValue(otherType.listT1);
+		}
+		if(ownType_T == CardType.T22){
+			return typeValue(ownType.listT2) > typeValue(otherType.listT2);
+		}
+		if(ownType_T == CardType.T31 || ownType_T == CardType.T32){
+			return ownType.listT3.get(0).getSingleValue() > otherType.listT3.get(0).getSingleValue();
+		}
+		if(ownType_T == CardType.T33 || ownType_T == CardType.T3312 || ownType_T == CardType.T3322){
+			return typeValue(ownType.listT3) > typeValue(otherType.listT3);
+		}
+		return false;
 	}
-
 }
