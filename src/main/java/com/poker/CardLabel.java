@@ -16,25 +16,21 @@ public class CardLabel extends JLabel {
 
 	private static final long serialVersionUID = -4590127474545680976L;
 
-	private  String name;
-	
+	private  final String name;
+
 	private  final Integer color;
 
 	private  final Integer value;
 
 	private  final Integer singleValue;
-	
+
 	private  final Integer continueValue;
 
-	private MainFrame main;
+	private boolean clicked;
 
 	private boolean clickable;
 
-	private boolean clicked;
-	
-	private final CardKey cardKey;
-
-	public CardLabel(MainFrame main,String name,boolean init){
+	public CardLabel(MainFrame main,String name){
 		this.name = name;
 		color = Integer.parseInt(name.substring(0,1));
 		if(color == 5){
@@ -52,75 +48,57 @@ public class CardLabel extends JLabel {
 			singleValue = value;
 			continueValue = value;
 		}
-		cardKey = new CardKey(this);
-		if(init){
-			this.main = main;
-			setSize(71, 96);
-			setVisible(true);
-			setIcon(new ImageIcon("images/rear.gif"));
-			addMouseListener(new MouseListener(){
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if(clickable){
-						int step; 
-						if(clicked)
-							step=-20;
-						else {
-							step=20;
-						}
-						clicked=!clicked; 
-						Point from = getLocation();
-						move(new Point(from.x,from.y-step));
+		setSize(71, 96);
+		setIcon(new ImageIcon("images/rear.gif"));
+		addMouseListener(new MouseListener(){
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(clickable){
+					int step; 
+					if(clicked)
+						step=-20;
+					else {
+						step=20;
 					}
+					clicked=!clicked; 
+					Point from = getLocation();
+					move(new Point(from.x,from.y-step));
 				}
-				public void mousePressed(MouseEvent e) {}
-				public void mouseReleased(MouseEvent e) {}
-				public void mouseEntered(MouseEvent e) {}
-				public void mouseExited(MouseEvent e) {}
-			});
-		}
-	}
-	
-	/**
-	 * 很想直接用card的value作为hash的因子，方便后面判断。
-	 * 但是会导致swing错乱，所以加了以value作为hash的CardKey类，并与Card互相持有引用。
-	 */
-	@Data
-	@EqualsAndHashCode(of = {"value"},callSuper = false)
-	public class CardKey{
-		
-		public CardLabel card;
-		
-		private  final Integer value;
-		
-		public CardKey(CardLabel card){
-			this.card = card;
-			value = card.getValue();
-		}
+			}
+			public void mousePressed(MouseEvent e) {}
+			public void mouseReleased(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+		});
 	}
 
-	public void show() {
+	public void turnUp() {
 		this.setIcon(new ImageIcon("images/" + name + ".gif"));
 	}
 
-	public void hide() {
+	public void turnBack(){
 		this.setIcon(new ImageIcon("images/rear.gif"));
+	}
+
+	public void hide() {
+		//TODO java.lang.StackOverflowError
+		//this.setVisible(false); 
 	}
 
 	public void move(Point to){
 		Point from = this.getLocation();
-		if(to.x!=from.x){
-			double k=(1.0)*(to.y-from.y)/(to.x-from.x);
-			double b=to.y-to.x*k;
-			int flag=0;//判断向左还是向右移动步幅
-			if(from.x<to.x)
-				flag=20;
+		if(to.x != from.x){
+			double k = (1.0) * (to.y - from.y) / (to.x - from.x);
+			double b = to.y - to.x * k;
+			int flag = 0;//判断向左还是向右移动步幅
+			if(from.x < to.x)
+				flag = 20;
 			else {
-				flag=-20;
+				flag = -20;
 			}
-			for(int i=from.x;Math.abs(i-to.x)>20;i+=flag)
+			for(int i = from.x;Math.abs(i - to.x)>20;i += flag)
 			{
-				double y=k*i+b;
+				double y = k * i + b;
 
 				this.setLocation(i,(int)y);
 				try {

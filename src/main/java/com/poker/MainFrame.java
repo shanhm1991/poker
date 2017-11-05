@@ -122,7 +122,7 @@ public class MainFrame extends JFrame {
 				if ((i == 5) && (j > 2)){
 					break;
 				}
-				CardLabel card = new CardLabel(this, i + "-" + j,true);
+				CardLabel card = new CardLabel(this, i + "-" + j);
 				card.setLocation(350, 50);
 				container.add(card);
 				cardList.add(card);
@@ -152,7 +152,7 @@ public class MainFrame extends JFrame {
 			case 1:
 				card.move(new Point(180+i*7,450));
 				userPlayer.getCardHoldList().add(card);
-				card.show(); 
+				card.turnUp(); 
 				break;
 			case 2:
 				card.move(new Point(700,60+i*5));
@@ -173,14 +173,14 @@ public class MainFrame extends JFrame {
 		int startPosition = 1; 
 		for(int i = startPosition; ;i++){
 			CardPlayer player = getPlayer(i % 3);
-			player.compete();
+			player.compete(30);
 			if(player.isLord()){
 				lordPosition = player.getPosition();
 				break;
 			}
 		}
 		for(CardLabel card : lordCardList){
-			card.show();
+			card.turnUp();
 		}
 		Thread.sleep(2000);
 		CardPlayer lord = getPlayer(lordPosition);
@@ -196,7 +196,7 @@ public class MainFrame extends JFrame {
 		publishTurn = lordPosition - 1;
 		while (true) {
 			CardPlayer player = getPlayer((++publishTurn) % 3);
-			player.publish();
+			player.publish(15);
 			if(player.getCardHoldList().isEmpty()){
 				if(player.getPosition() == CardPlayer.POSITION_USER){
 					JOptionPane.showMessageDialog(this, "you win!");
@@ -221,7 +221,7 @@ public class MainFrame extends JFrame {
 	}
 
 	private void showAbout(){
-		JOptionPane.showMessageDialog(this, "version 1.0  by牧风-shanhm1991@163.com");
+		JOptionPane.showMessageDialog(this, "version 1.0 shanhm1991@163.com");
 	}
 
 	public static void main(String[] args) throws InterruptedException {

@@ -9,7 +9,6 @@ import java.util.List;
 import javax.swing.JTextField;
 
 import com.poker.CardLabel;
-import com.poker.CardType;
 import com.poker.MainFrame;
 
 import lombok.Data;
@@ -17,7 +16,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(of = {"position"},callSuper = false)
-public class CardPlayer {
+public abstract class CardPlayer {
 	/**
 	 * 左手电脑
 	 */
@@ -68,13 +67,9 @@ public class CardPlayer {
 		});
 	}
 
-	public void compete() throws InterruptedException{
-
-	}
+	public abstract void compete(final int seconds);
 	
-	public void publish() {
-
-	}
+	public abstract void publish(final int seconds);
 
 	public void resetPosition(){
 		int point_x = 0;
@@ -114,7 +109,6 @@ public class CardPlayer {
 		clockFiled.setVisible(true);
 		while(clockTime >= 0){
 			if(clockEnd){
-				System.out.println(clockEnd);
 				clockFiled.setVisible(false);
 				return;
 			}
@@ -132,99 +126,6 @@ public class CardPlayer {
 		clockFiled.setVisible(false);
 	}
 	
-	protected int getType(List<CardLabel> cardList){
-		CardType type = new CardType(cardList);
-		return getType(cardList,type);
-	}
-	
-	protected int getType(List<CardLabel> cardList, CardType type){
-		int listSize = cardList.size();
-		int distinctSize = type.distinctList.size();
-		if(distinctSize == 1) {
-			switch(listSize) {
-			case 1:
-				return CardType.T1;
-			case 2:
-				return CardType.T2;
-			case 3:
-				return CardType.T3;
-			case 4:
-				return CardType.T4;
-			}
-			return CardType.T0;
-		}
-		if(type.listT4.size() > 0){
-			return CardType.T0;
-		}
-		if(distinctSize == 2){
-			if(cardList.get(0).getValue() > 50 && cardList.get(1).getValue() > 50){
-				return CardType.T4;
-			}
-			if(type.listT3.size() > 0){
-				switch(listSize) {
-				case 4:
-					return CardType.T31;
-				case 5:
-					return CardType.T32;
-				case 6:
-					return CardType.T33;
-				}
-			}
-			return CardType.T0;
-		}
-		if(listSize <= 4){
-			return CardType.T0;
-		}
-		//listSize > 4
-		//飞机
-		if(type.listT1.isEmpty() && type.listT2.isEmpty() && typeValue(type.listT3) != 0){ 
-			return CardType.T33;
-		}
-		//连对
-		if(type.listT1.isEmpty() && type.listT3.isEmpty() && typeValue(type.listT2) != 0){
-			return CardType.T22;
-		}
-		//顺子
-		if(type.listT2.isEmpty() && type.listT3.isEmpty() && typeValue(type.listT1) != 0){
-			return CardType.T123;
-		}
-		//飞机带单
-		if(type.listT3.size() == type.listT1.size() && type.listT2.isEmpty() && typeValue(type.listT3) != 0){
-			return CardType.T3312;
-
-		}
-		//飞机带双
-		if(type.listT3.size() == type.listT2.size() && type.listT1.isEmpty() && typeValue(type.listT3) != 0){
-			return CardType.T3322;
-		}
-		return CardType.T0;
-	}
-	
-	protected int typeValue(List<CardLabel> list){
-		Collections.sort(list,new Comparator<CardLabel>() {
-			@Override
-			public int compare(CardLabel c1, CardLabel c2) {
-				return c2.getValue() - c1.getValue();
-			}
-		});
-		if(list.get(0).getValue() - list.get(list.size() - 1).getValue() == list.size() - 1){
-			return list.get(0).getValue();
-		}
-		//A字顺 TODO
-		if(list.contains(new CardLabel(null,"1-1",false))){
-			Collections.sort(list,new Comparator<CardLabel>() {
-				@Override
-				public int compare(CardLabel c1, CardLabel c2) {
-					return c2.getContinueValue() - c1.getContinueValue();
-				}
-			});
-			if(list.get(0).getValue() - list.get(list.size() - 1).getValue() == list.size() - 1){
-				return list.get(0).getValue();
-			}
-		}
-		return 0;
-	}
-
 	public int getScore(){
 		int score=0;
 		for(int i=0,len=cardHoldList.size();i<len;i++){
