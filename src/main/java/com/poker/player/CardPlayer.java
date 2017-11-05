@@ -126,48 +126,4 @@ public abstract class CardPlayer {
 		clockFiled.setVisible(false);
 	}
 	
-	public int getScore(){
-		int score=0;
-		for(int i=0,len=cardHoldList.size();i<len;i++){
-			CardLabel card=cardHoldList.get(i);
-			if(card.getName().substring(0, 1).equals("5")){
-				score+=5;
-			}
-			if(card.getName().substring(2, card.getName().length()).equals("2")){
-				score+=2;
-			}
-		}
-		return score;
-	}
-
-	//按照重复次数排序
-	protected List<CardLabel> getOrder2(List<CardLabel> list){
-		List<CardLabel> list2=new ArrayList<CardLabel>(list);
-		List<CardLabel> list3=new ArrayList<CardLabel>();
-		int len=list2.size();
-		int a[]=new int[20];
-		for(int i=0;i<20;i++)
-			a[i]=0;
-		for(int i=0;i<len;i++)
-		{
-			a[list2.get(i).getValue()]++;
-		}
-		int max=0;
-		for(int i=0;i<20;i++){
-			max=0;
-			for(int j=19;j>=0;j--){
-				if(a[j]>a[max])
-					max=j;
-			}
-
-			for(int k=0;k<len;k++){
-				if(list2.get(k).getValue() == max){
-					list3.add(list2.get(k));
-				}
-			}
-			list2.remove(list3);
-			a[max]=0;
-		}
-		return list3;
-	}
 }

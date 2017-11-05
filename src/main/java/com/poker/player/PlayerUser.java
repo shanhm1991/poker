@@ -101,7 +101,6 @@ public class PlayerUser extends CardPlayer {
 	public void publish(final int seconds){
 		publishButton.setVisible(true);
 		notPublishButton.setVisible(true);
-		System.out.println(cardPublishList.size()); 
 		for(CardLabel card : cardPublishList){
 			card.hide();
 		}

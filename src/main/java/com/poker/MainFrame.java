@@ -17,6 +17,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.poker.player.CardPlayer;
 import com.poker.player.PlayerConputer;
@@ -70,6 +71,7 @@ public class MainFrame extends JFrame {
 		userPlayer = new PlayerUser(this,CardPlayer.POSITION_USER);
 		leftConputer = new PlayerConputer(this,CardPlayer.POSITION_LEFT);
 		rightConputer = new PlayerConputer(this,CardPlayer.POSITION_RIGHT);
+
 		initCard();
 		compete();
 		publish();
@@ -169,7 +171,7 @@ public class MainFrame extends JFrame {
 		rightConputer.resetPosition();
 	}
 
-	private void compete() throws InterruptedException{
+	private void compete(){
 		int startPosition = 1; 
 		for(int i = startPosition; ;i++){
 			CardPlayer player = getPlayer(i % 3);
@@ -182,7 +184,6 @@ public class MainFrame extends JFrame {
 		for(CardLabel card : lordCardList){
 			card.turnUp();
 		}
-		Thread.sleep(2000);
 		CardPlayer lord = getPlayer(lordPosition);
 		lord.getCardHoldList().addAll(lordCardList);
 		lord.order();
