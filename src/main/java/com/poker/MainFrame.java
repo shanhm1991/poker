@@ -65,10 +65,11 @@ public class MainFrame extends JFrame {
 		userPlayer = new PlayerUser(this,CardPlayer.POSITION_USER);
 		leftConputer = new PlayerConputer(this,CardPlayer.POSITION_LEFT);
 		rightConputer = new PlayerConputer(this,CardPlayer.POSITION_RIGHT);
+		
 		SwingUtilities.invokeLater(new Runnable(){
 			/**
-			 * 将对swing的变更操作放到EventDispatchThread中，否则很可能发生
-			 * "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException: No such child之类异常
+			 * 将对swing的变更操作放到EventDispatchThread中，否则很容易发生异常
+			 * "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException: No such child
 			 */
 			@Override
 			public void run() {
@@ -217,6 +218,7 @@ public class MainFrame extends JFrame {
 				}else{
 					JOptionPane.showMessageDialog(this, "you loss!");
 				}
+				return;
 			}
 		}
 	}

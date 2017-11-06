@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.poker.CardLabel;
+import com.poker.CardType;
 import com.poker.MainFrame;
 
 import lombok.Data;
@@ -36,17 +37,20 @@ public class PlayerConputer extends CardPlayer {
 
 	@Override
 	public void compete(final int seconds) {
-		ThinkingTask competeThinking = new ThinkingTask();
+		PublishTask competeThinking = new PublishTask();
 		FutureTask<List<CardLabel>> future = new FutureTask<List<CardLabel>>(competeThinking);
 		new Thread(future).start();
+		
 		clock(seconds);
+		
+		
 	}
 
 	@Override
 	public void publish(final int seconds) {
 		cardPublishList.clear();
 
-		ThinkingTask publishThinking = new ThinkingTask();
+		PublishTask publishThinking = new PublishTask();
 		FutureTask<List<CardLabel>> future = new FutureTask<List<CardLabel>>(publishThinking);
 		new Thread(future).start();
 		clock(seconds);
@@ -81,17 +85,32 @@ public class PlayerConputer extends CardPlayer {
 		resetPosition();
 	}
 
-	/**
-	 * 电脑思考线程，非swing线程，不能更新swing组件
-	 */
-	private class ThinkingTask implements Callable<List<CardLabel>>{
+
+	//电脑思考是否抢地主
+	private class CompeteTask implements Callable{
+
+		@Override
+		public Object call() throws Exception {
+			
+			CardType holdType = new CardType(cardHoldList);
+			
+			Thread.sleep(2000);
+
+			clockEnd = true;
+			return null;
+		}
+
+
+	}
+
+	//电脑思考出牌
+	private class PublishTask implements Callable<List<CardLabel>>{
 
 		@Override
 		public List<CardLabel> call() throws Exception {
-			
 
 			Thread.sleep(2000);
-			
+
 			clockEnd = true;
 
 			return new ArrayList<CardLabel>();

@@ -3,7 +3,6 @@ package com.poker.player;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -69,9 +68,8 @@ public class PlayerUser extends CardPlayer {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				clockFiled.setText("不要");
-				cardPublishList.clear();
 				clockEnd = true;
-
+				published = false;
 			}
 		});
 		frame.container.add(competeButton);
@@ -99,42 +97,42 @@ public class PlayerUser extends CardPlayer {
 	
 	@Override
 	public void publish(final int seconds){
-		publishButton.setVisible(true);
-		notPublishButton.setVisible(true);
 		for(CardLabel card : cardPublishList){
 			card.disappear();
 		}
+		cardPublishList.clear();
+		publishButton.setVisible(true);
+		notPublishButton.setVisible(true);
 		clock(15);
 		publishButton.setVisible(false);
 		notPublishButton.setVisible(false);
 	}
 
 	private void confirmPublishCard() {
-		List<CardLabel> ownPublishCards = new ArrayList<CardLabel>();
 		for(CardLabel card : cardHoldList) {
 			if(card.isClicked()){
-				ownPublishCards.add(card);
+				cardPublishList.add(card);
 			}
 		}
-		if(ownPublishCards.isEmpty() || !isPublishAble(ownPublishCards)){
+		if(cardPublishList.isEmpty() || !isPublishAble()){
 			return;
 		}
 		Point point=new Point();
-		point.x = (770 / 2) - (ownPublishCards.size() + 1) * 15 / 2;;
+		point.x = (770 / 2) - (cardPublishList.size() + 1) * 15 / 2;;
 		point.y = 300;
-		for(int i=0,len=ownPublishCards.size();i<len;i++){
-			ownPublishCards.get(i).move(point);
+		for(int i=0,len=cardPublishList.size();i<len;i++){
+			cardPublishList.get(i).move(point);
 			point.x += 15;
 		}
-		cardPublishList = ownPublishCards;
-		cardHoldList.removeAll(ownPublishCards);
+		cardHoldList.removeAll(cardPublishList);
 		resetPosition();
 		clockFiled.setVisible(false);
 		clockEnd = true;
+		published = true;
 	}
 	
-	private boolean isPublishAble(List<CardLabel> ownPublishCards){
-		CardType ownType = new CardType(ownPublishCards);
+	private boolean isPublishAble(){
+		CardType ownType = new CardType(cardPublishList);
 		int ownTypeValue = ownType.typeValue();
 		if(ownTypeValue == CardType.T0){
 			return false;
@@ -155,7 +153,7 @@ public class PlayerUser extends CardPlayer {
 
 		//有炸弹
 		if(ownTypeValue == CardType.T4){
-			if(ownPublishCards.size() == 2 || otherTypeValue != CardType.T4){
+			if(cardPublishList.size() == 2 || otherTypeValue != CardType.T4){
 				return true;
 			}
 			if(otherPublishCards.size() == 2){//size=2是王炸
@@ -164,12 +162,12 @@ public class PlayerUser extends CardPlayer {
 			return ownType.valueT4() > otherType.valueT4();
 		}
 		//牌数或牌种不同
-		if(ownPublishCards.size() != otherPublishCards.size() || ownTypeValue != otherTypeValue){
+		if(cardPublishList.size() != otherPublishCards.size() || ownTypeValue != otherTypeValue){
 			return false;
 		}
 		//ownList.size=otherList.size、ownType=otherType
 		if(ownTypeValue == CardType.T1 || ownTypeValue==CardType.T2 || ownTypeValue==CardType.T3){
-			return ownPublishCards.get(0).getSingleValue() > ownPublishCards.get(0).getSingleValue();
+			return cardPublishList.get(0).getSingleValue() > otherPublishCards.get(0).getSingleValue();
 		}
 		if(ownTypeValue == CardType.T123){
 			return ownType.valueT123() > otherType.valueT123();

@@ -42,13 +42,15 @@ public abstract class CardPlayer {
 
 	protected MainFrame frame;
 
-	protected boolean lord;
-
 	protected JTextField clockFiled;
 
-	private Thread clockThread;
+	protected volatile boolean lord;
+
+	protected volatile boolean published;
 
 	protected volatile boolean clockEnd = true;
+
+	private Thread clockThread;
 
 	public CardPlayer(MainFrame frame, int position){
 		this.position = position;
@@ -57,7 +59,7 @@ public abstract class CardPlayer {
 		clockFiled.setVisible(false);
 		frame.container.add(clockFiled);
 	}
-	
+
 	public void order(){
 		Collections.sort(cardHoldList,new Comparator<CardLabel>() {
 			@Override
@@ -68,7 +70,7 @@ public abstract class CardPlayer {
 	}
 
 	public abstract void compete(final int seconds);
-	
+
 	public abstract void publish(final int seconds);
 
 	public void resetPosition(){
@@ -99,7 +101,7 @@ public abstract class CardPlayer {
 				point_y += 15;
 		}
 	}
-	
+
 	/**
 	 * 时钟放在主线程中走
 	 */
@@ -125,5 +127,5 @@ public abstract class CardPlayer {
 		clockEnd = true;
 		clockFiled.setVisible(false);
 	}
-	
+
 }
