@@ -10,6 +10,12 @@ import javax.swing.JLabel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 不要重写父类的hide()方法，并简单的调用setVisible(false)
+ * 否则会造成无限循环调用，最终导致java.lang.StackOverflowError
+ * 
+ * @author shanhm1991
+ */
 @Data
 @EqualsAndHashCode(of = {"name"},callSuper = false)
 public class CardLabel extends JLabel {
@@ -49,6 +55,8 @@ public class CardLabel extends JLabel {
 			continueValue = value;
 		}
 		setSize(71, 96);
+		setVisible(true); 
+		setLocation(350, 50);
 		setIcon(new ImageIcon("images/rear.gif"));
 		addMouseListener(new MouseListener(){
 			@Override
@@ -72,17 +80,15 @@ public class CardLabel extends JLabel {
 		});
 	}
 
-	public void turnUp() {
+	public void disappear(){
+		this.setVisible(false); 
+	}
+
+	public void turnUp(){
 		this.setIcon(new ImageIcon("images/" + name + ".gif"));
 	}
-
 	public void turnBack(){
 		this.setIcon(new ImageIcon("images/rear.gif"));
-	}
-
-	public void hide() {
-		//TODO java.lang.StackOverflowError
-		//this.setVisible(false); 
 	}
 
 	public void move(Point to){
@@ -90,16 +96,14 @@ public class CardLabel extends JLabel {
 		if(to.x != from.x){
 			double k = (1.0) * (to.y - from.y) / (to.x - from.x);
 			double b = to.y - to.x * k;
-			int flag = 0;//判断向左还是向右移动步幅
+			int flag = 0;
 			if(from.x < to.x)
 				flag = 20;
 			else {
 				flag = -20;
 			}
-			for(int i = from.x;Math.abs(i - to.x)>20;i += flag)
-			{
+			for(int i = from.x;Math.abs(i - to.x) > 20;i += flag){
 				double y = k * i + b;
-
 				this.setLocation(i,(int)y);
 				try {
 					Thread.sleep(5); 
@@ -110,4 +114,5 @@ public class CardLabel extends JLabel {
 		}
 		this.setLocation(to);
 	}
+
 }

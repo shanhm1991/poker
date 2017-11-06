@@ -102,7 +102,7 @@ public class PlayerUser extends CardPlayer {
 		publishButton.setVisible(true);
 		notPublishButton.setVisible(true);
 		for(CardLabel card : cardPublishList){
-			card.hide();
+			card.disappear();
 		}
 		clock(15);
 		publishButton.setVisible(false);

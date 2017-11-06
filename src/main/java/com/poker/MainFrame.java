@@ -61,23 +61,37 @@ public class MainFrame extends JFrame {
 	boolean nextPlayer = false;
 
 	public MainFrame() throws InterruptedException{ 
+		init();
+		userPlayer = new PlayerUser(this,CardPlayer.POSITION_USER);
+		leftConputer = new PlayerConputer(this,CardPlayer.POSITION_LEFT);
+		rightConputer = new PlayerConputer(this,CardPlayer.POSITION_RIGHT);
+		SwingUtilities.invokeLater(new Runnable(){
+			/**
+			 * 将对swing的变更操作放到EventDispatchThread中，否则很可能发生
+			 * "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException: No such child之类异常
+			 */
+			@Override
+			public void run() {
+				new Thread(){
+					@Override
+					public void run() {
+						initCard();
+						compete();
+						publish();
+					}
+				}.start();
+			}
+		});
+	}
+
+	private void init() {
 		setSize(830, 620);
 		setVisible(true);
 		setResizable(false);
 		setLocationRelativeTo(getOwner());
 		setTitle("斗地主 - shanhm1991@163.com");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		initFrame();
-		userPlayer = new PlayerUser(this,CardPlayer.POSITION_USER);
-		leftConputer = new PlayerConputer(this,CardPlayer.POSITION_LEFT);
-		rightConputer = new PlayerConputer(this,CardPlayer.POSITION_RIGHT);
-
-		initCard();
-		compete();
-		publish();
-	}
-
-	private void initFrame() {
+		
 		container = this.getContentPane();
 		container.setLayout(null);
 		container.setBackground(new Color(0, 112, 26)); 
@@ -125,7 +139,6 @@ public class MainFrame extends JFrame {
 					break;
 				}
 				CardLabel card = new CardLabel(this, i + "-" + j);
-				card.setLocation(350, 50);
 				container.add(card);
 				cardList.add(card);
 			}
