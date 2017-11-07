@@ -79,14 +79,6 @@ public class PlayerUser extends CardPlayer {
 	}
 
 	@Override
-	public void order(){
-		super.order();
-		for(CardLabel card : cardHoldList){
-			card.setClickable(true); 
-		}
-	}
-
-	@Override
 	public void compete(final int seconds) {
 		competeButton.setVisible(true);
 		notCompeteButton.setVisible(true);

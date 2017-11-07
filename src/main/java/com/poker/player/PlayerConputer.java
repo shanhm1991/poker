@@ -3,15 +3,15 @@ package com.poker.player;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.poker.CardLabel;
-import com.poker.CardType;
 import com.poker.MainFrame;
+import com.poker.player.conputerTask.CompeteTask;
+import com.poker.player.conputerTask.PublishTask;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -37,10 +37,8 @@ public class PlayerConputer extends CardPlayer {
 
 	@Override
 	public void compete(final int seconds) {
-		PublishTask competeThinking = new PublishTask();
-		FutureTask<List<CardLabel>> future = new FutureTask<List<CardLabel>>(competeThinking);
+		FutureTask<Boolean> future = new FutureTask<Boolean>(new CompeteTask(this));
 		new Thread(future).start();
-		
 		clock(seconds);
 		
 		
@@ -49,9 +47,7 @@ public class PlayerConputer extends CardPlayer {
 	@Override
 	public void publish(final int seconds) {
 		cardPublishList.clear();
-
-		PublishTask publishThinking = new PublishTask();
-		FutureTask<List<CardLabel>> future = new FutureTask<List<CardLabel>>(publishThinking);
+		FutureTask<List<CardLabel>> future = new FutureTask<List<CardLabel>>(new PublishTask(this));
 		new Thread(future).start();
 		clock(seconds);
 
@@ -85,35 +81,4 @@ public class PlayerConputer extends CardPlayer {
 		resetPosition();
 	}
 
-
-	//电脑思考是否抢地主
-	private class CompeteTask implements Callable{
-
-		@Override
-		public Object call() throws Exception {
-			
-			CardType holdType = new CardType(cardHoldList);
-			
-			Thread.sleep(2000);
-
-			clockEnd = true;
-			return null;
-		}
-
-
-	}
-
-	//电脑思考出牌
-	private class PublishTask implements Callable<List<CardLabel>>{
-
-		@Override
-		public List<CardLabel> call() throws Exception {
-
-			Thread.sleep(2000);
-
-			clockEnd = true;
-
-			return new ArrayList<CardLabel>();
-		}
-	}
 }

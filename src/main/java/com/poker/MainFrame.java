@@ -77,8 +77,8 @@ public class MainFrame extends JFrame {
 					@Override
 					public void run() {
 						initCard();
-						compete();
-						publish();
+//						compete();
+//						publish();
 					}
 				}.start();
 			}
@@ -164,6 +164,7 @@ public class MainFrame extends JFrame {
 			case 0:
 				card.move(new Point(50,60+i*5));
 				leftConputer.getCardHoldList().add(card);
+				card.turnUp(); //
 				break;
 			case 1:
 				card.move(new Point(180+i*7,450));
@@ -173,6 +174,7 @@ public class MainFrame extends JFrame {
 			case 2:
 				card.move(new Point(700,60+i*5));
 				rightConputer.getCardHoldList().add(card);
+				card.turnUp(); //
 				break;
 			}
 			container.setComponentZOrder(card, 0);
@@ -205,6 +207,9 @@ public class MainFrame extends JFrame {
 		lordLabel.setLocation(lord.getLordPoint()); 
 		lordLabel.setVisible(true); 
 		lord.getClockFiled().setVisible(true);
+		for(CardLabel card : userPlayer.getCardHoldList()){
+			card.setClickable(true); 
+		}
 	}
 
 	private void publish(){

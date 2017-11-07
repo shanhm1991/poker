@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.JTextField;
 
 import com.poker.CardLabel;
+import com.poker.CardType;
 import com.poker.MainFrame;
 
 import lombok.Data;
@@ -100,6 +101,8 @@ public abstract class CardPlayer {
 			else 
 				point_y += 15;
 		}
+
+		test();
 	}
 
 	/**
@@ -128,4 +131,61 @@ public abstract class CardPlayer {
 		clockFiled.setVisible(false);
 	}
 
+	private void test() {
+
+		CardType type = new CardType(cardHoldList);
+
+		int turns = 0;//手数
+		List<CardLabel> list = new ArrayList<CardLabel>();
+		list.addAll(cardHoldList);
+
+
+		//尝试找一个顺子
+		List<CardLabel> a1 = type.distinctList;
+		Collections.sort(a1,new Comparator<CardLabel>() {
+			@Override
+			public int compare(CardLabel c1, CardLabel c2) {
+				return c1.getValue() - c2.getValue();
+			}
+		});
+
+		if(a1.size() > 4) {
+			int len = 5 - 1;
+			int ci = 0;
+			int cj = 0;
+			boolean c = false;
+			for(int i=0,j=4;j<a1.size();j++) {
+
+
+				if(a1.get(j).getValue() - a1.get(i).getValue() == j -i ) {
+					len = j - i;
+					ci = i;
+					cj = j;
+					c = true;
+					continue;
+				}
+				//上一个顺子结束
+				if(c) {
+					if(cj + 5 < a1.size()) {
+						System.out.println(c + "-" + (len+1) + "---" + a1.get(ci).getValue() + "---" + a1.get(cj).getValue());
+						i = cj;
+						j = cj + 4;
+						c = false;
+					}
+				}else {
+					i++;
+				}
+				
+			}
+			System.out.println(c + "-" + (len+1) + "---" + a1.get(ci).getValue() + "---" + a1.get(cj).getValue());
+		}
+
+
+
+
+
+
+
+
+	}
 }
