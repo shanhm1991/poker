@@ -8,20 +8,20 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.poker.CardLabel;
-import com.poker.MainFrame;
-import com.poker.player.conputerTask.CompeteTask;
-import com.poker.player.conputerTask.PublishTask;
+import com.poker.Card;
+import com.poker.BootFrame;
+import com.poker.player.idea.IdeaCompete;
+import com.poker.player.idea.IdeaPublish;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class PlayerConputer extends CardPlayer {
+public class PlayerConputer extends Player {
 
-	public PlayerConputer(MainFrame frame, int position) {
-		super(frame, position);
+	public PlayerConputer(BootFrame frame,int position) {
+		super(frame,position);
 		switch(position){
 		case POSITION_LEFT:
 			lordPoint = new Point(80,20);
@@ -37,7 +37,7 @@ public class PlayerConputer extends CardPlayer {
 
 	@Override
 	public void compete(final int seconds) {
-		FutureTask<Boolean> future = new FutureTask<Boolean>(new CompeteTask(this));
+		FutureTask<Boolean> future = new FutureTask<Boolean>(new IdeaCompete(this));
 		new Thread(future).start();
 		clock(seconds);
 		
@@ -47,21 +47,21 @@ public class PlayerConputer extends CardPlayer {
 	@Override
 	public void publish(final int seconds) {
 		cardPublishList.clear();
-		FutureTask<List<CardLabel>> future = new FutureTask<List<CardLabel>>(new PublishTask(this));
+		FutureTask<List<Card>> future = new FutureTask<List<Card>>(new IdeaPublish(this));
 		new Thread(future).start();
 		clock(seconds);
 
-		List<CardLabel> publishCardList;
+		List<Card> publishCardList;
 		try {
 			publishCardList = future.get(1, TimeUnit.SECONDS);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			System.out.println("occured a exception:" + e.getMessage()); 
-			publishCardList = new ArrayList<CardLabel>();
+			publishCardList = new ArrayList<Card>();
 		}
 
 		if(publishCardList.isEmpty()){
-			frame.getPlayer(position).getClockFiled().setVisible(true);
-			frame.getPlayer(position).getClockFiled().setText("不要");
+			clockFiled.setVisible(true);
+			clockFiled.setText("不要");
 			return;
 		}
 
@@ -73,12 +73,12 @@ public class PlayerConputer extends CardPlayer {
 		point.y = (400 / 2) - (publishCardList.size() + 1) * 15 / 2;
 		cardPublishList.addAll(publishCardList);
 		cardHoldList.removeAll(publishCardList);
-		for(CardLabel card : publishCardList){
-			card.move(point);
+		for(Card card : publishCardList){
+			card.asynmove(point);
 			point.y += 15;
-			card.turnUp();
+			card.show();
 		}
-		resetPosition();
+		resetPosition(false);
 	}
 
 }

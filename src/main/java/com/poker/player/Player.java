@@ -8,16 +8,15 @@ import java.util.List;
 
 import javax.swing.JTextField;
 
-import com.poker.CardLabel;
-import com.poker.CardType;
-import com.poker.MainFrame;
+import com.poker.Card;
+import com.poker.BootFrame;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(of = {"position"},callSuper = false)
-public abstract class CardPlayer {
+public abstract class Player {
 	/**
 	 * 左手电脑
 	 */
@@ -33,15 +32,13 @@ public abstract class CardPlayer {
 	 */
 	public static final int POSITION_RIGHT = 2;
 
-	protected List<CardLabel> cardHoldList = new ArrayList<CardLabel>();
+	protected List<Card> cardHoldList = new ArrayList<Card>();
 
-	protected List<CardLabel> cardPublishList = new ArrayList<CardLabel>();
+	protected List<Card> cardPublishList = new ArrayList<Card>();
 
 	protected Point lordPoint;
 
 	protected int position;
-
-	protected MainFrame frame;
 
 	protected JTextField clockFiled;
 
@@ -50,21 +47,23 @@ public abstract class CardPlayer {
 	protected volatile boolean published;
 
 	protected volatile boolean clockEnd = true;
+	
+	protected BootFrame frame;
 
 	private Thread clockThread;
 
-	public CardPlayer(MainFrame frame, int position){
-		this.position = position;
+	public Player(BootFrame frame,int position){
 		this.frame = frame;
+		this.position = position;
 		clockFiled = new JTextField("倒计时:");
 		clockFiled.setVisible(false);
 		frame.container.add(clockFiled);
 	}
 
 	public void order(){
-		Collections.sort(cardHoldList,new Comparator<CardLabel>() {
+		Collections.sort(cardHoldList,new Comparator<Card>() {
 			@Override
-			public int compare(CardLabel c1, CardLabel c2) {
+			public int compare(Card c1, Card c2) {
 				return c2.getSingleValue() - c1.getSingleValue();
 			}
 		});
@@ -73,8 +72,12 @@ public abstract class CardPlayer {
 	public abstract void compete(final int seconds);
 
 	public abstract void publish(final int seconds);
+	
+	public void contain() {
+		
+	}
 
-	public void resetPosition(){
+	public void resetPosition(boolean syn){
 		int point_x = 0;
 		int point_y = 0;
 		switch(position){
@@ -93,16 +96,19 @@ public abstract class CardPlayer {
 		default:;
 		}
 		for(int i = 0;i < cardHoldList.size();i++){
-			CardLabel card=cardHoldList.get(i);
-			card.move(new Point(point_x,point_y));
-			frame.container.setComponentZOrder(card, 0);
+			Card card=cardHoldList.get(i);
+			if(syn) {
+				card.synmove(new Point(point_x,point_y));
+			}else {
+				card.asynmove(new Point(point_x,point_y));
+			}
+			frame.container.setComponentZOrder(card.getLabel(), 0);
 			if(position == POSITION_USER)
 				point_x += 21;
 			else 
 				point_y += 15;
 		}
 
-		test();
 	}
 
 	/**
@@ -129,63 +135,5 @@ public abstract class CardPlayer {
 		}
 		clockEnd = true;
 		clockFiled.setVisible(false);
-	}
-
-	private void test() {
-
-		CardType type = new CardType(cardHoldList);
-
-		int turns = 0;//手数
-		List<CardLabel> list = new ArrayList<CardLabel>();
-		list.addAll(cardHoldList);
-
-
-		//尝试找一个顺子
-		List<CardLabel> a1 = type.distinctList;
-		Collections.sort(a1,new Comparator<CardLabel>() {
-			@Override
-			public int compare(CardLabel c1, CardLabel c2) {
-				return c1.getValue() - c2.getValue();
-			}
-		});
-
-		if(a1.size() > 4) {
-			int len = 5 - 1;
-			int ci = 0;
-			int cj = 0;
-			boolean c = false;
-			for(int i=0,j=4;j<a1.size();j++) {
-
-
-				if(a1.get(j).getValue() - a1.get(i).getValue() == j -i ) {
-					len = j - i;
-					ci = i;
-					cj = j;
-					c = true;
-					continue;
-				}
-				//上一个顺子结束
-				if(c) {
-					if(cj + 5 < a1.size()) {
-						System.out.println(c + "-" + (len+1) + "---" + a1.get(ci).getValue() + "---" + a1.get(cj).getValue());
-						i = cj;
-						j = cj + 4;
-						c = false;
-					}
-				}else {
-					i++;
-				}
-				
-			}
-			System.out.println(c + "-" + (len+1) + "---" + a1.get(ci).getValue() + "---" + a1.get(cj).getValue());
-		}
-
-
-
-
-
-
-
-
 	}
 }

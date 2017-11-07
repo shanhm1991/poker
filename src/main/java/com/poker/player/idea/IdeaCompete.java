@@ -1,9 +1,9 @@
-package com.poker.player.conputerTask;
+package com.poker.player.idea;
 
 import java.util.concurrent.Callable;
 
-import com.poker.CardType;
-import com.poker.player.CardPlayer;
+import com.poker.Type;
+import com.poker.player.Player;
 
 /**
  * 每次抢地主或者出牌前先粗略算一下出牌最优手数
@@ -11,11 +11,11 @@ import com.poker.player.CardPlayer;
  * 对于单牌2为-1；A为-0.5；J/Q/K为1；7/8/9/10为1.5；3/4/5/6为2
  * 其他牌种，手数均算1
  */
-public class CompeteTask implements Callable<Boolean>{
+public class IdeaCompete implements Callable<Boolean>{
 	
-	private CardPlayer conputer;
+	private Player conputer;
 	
-	public CompeteTask(CardPlayer conputer) {
+	public IdeaCompete(Player conputer) {
 		this.conputer = conputer;
 	}
 
