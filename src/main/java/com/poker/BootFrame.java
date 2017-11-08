@@ -36,8 +36,6 @@ public class BootFrame extends JFrame {
 
 	private JLabel lordLabel; 
 
-	private int publishTurn;
-
 	private int lordPosition;
 
 	private Player userPlayer;
@@ -47,8 +45,6 @@ public class BootFrame extends JFrame {
 	private Player rightConputer;
 
 	private List<Card> lordCardList;
-
-	boolean nextPlayer = false;
 
 	public BootFrame() {
 		init();
@@ -173,9 +169,8 @@ public class BootFrame extends JFrame {
 		for(Card card : lordCardList){
 			card.show();
 		}
-
 		try {
-			Thread.sleep(2000);
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -193,7 +188,7 @@ public class BootFrame extends JFrame {
 	}
 
 	private void publish(){
-		publishTurn = lordPosition - 1;
+		int publishTurn = lordPosition - 1;
 		while (true) {
 			Player player = getPlayer((++publishTurn) % 3);
 			player.publish(15);

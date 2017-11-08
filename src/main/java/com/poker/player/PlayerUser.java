@@ -3,12 +3,13 @@ package com.poker.player;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JButton;
 
-import com.poker.Card;
 import com.poker.BootFrame;
+import com.poker.Card;
 import com.poker.Type;
 
 
@@ -97,8 +98,11 @@ public class PlayerUser extends Player {
 	}
 
 	private void confirmPublishCard() {
-		for(Card card : cardHoldList) {
-			if(card.isClicked()){
+		Iterator<Card> it = cardHoldList.iterator();
+		while(it.hasNext()) {
+			Card card = it.next();
+			if(card.isClicked()) {
+				it.remove();
 				cardPublishList.add(card);
 			}
 		}
@@ -112,7 +116,6 @@ public class PlayerUser extends Player {
 			cardPublishList.get(i).synmove(point);
 			point.x += 15;
 		}
-		cardHoldList.removeAll(cardPublishList);
 		resetPosition(true);
 		clockFiled.setVisible(false);
 		clockEnd = true;
@@ -121,7 +124,7 @@ public class PlayerUser extends Player {
 	
 	private boolean isPublishAble(){
 		Type ownType = new Type(cardPublishList);
-		int ownTypeValue = ownType.typeValue();
+		int ownTypeValue = ownType.type();
 		if(ownTypeValue == Type.T0){
 			return false;
 		}
@@ -137,7 +140,7 @@ public class PlayerUser extends Player {
 			otherPublishCards = nextPlayer.getCardPublishList();
 		}
 		Type otherType = new Type(otherPublishCards);
-		int otherTypeValue = otherType.typeValue();
+		int otherTypeValue = otherType.type();
 
 		//有炸弹
 		if(ownTypeValue == Type.T4){
