@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import com.poker.Card;
@@ -31,12 +33,16 @@ public abstract class Player {
 	 * 右手电脑
 	 */
 	public static final int POSITION_RIGHT = 2;
+	
+	public static int lorderPosition;
 
 	protected List<Card> cardHoldList = new ArrayList<Card>();
 
 	protected List<Card> cardPublishList = new ArrayList<Card>();
 
 	protected Point lordPoint;
+	
+	protected JLabel lordLabel; 
 
 	protected int position;
 
@@ -73,8 +79,28 @@ public abstract class Player {
 
 	public abstract void publish(final int seconds);
 	
-	public void contain() {
+	public void lordinit(List<Card> lordCardList){
+		lorderPosition = position;
 		
+		for(Card card : lordCardList){
+			card.show();
+		}
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		cardHoldList.addAll(lordCardList);
+		order();
+		resetPosition(false);
+		
+		lordLabel=new JLabel(new ImageIcon("images/dizhu.gif"));
+		lordLabel.setSize(40, 40);
+		lordLabel.setVisible(true);
+		lordLabel.setLocation(lordPoint); 
+		
+		frame.container.add(lordLabel);
 	}
 
 	public void resetPosition(boolean syn){

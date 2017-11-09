@@ -10,9 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -34,29 +32,13 @@ public class BootFrame extends JFrame {
 
 	private JMenuItem about;
 
-	private JLabel lordLabel; 
-
-	private int lordPosition;
-
 	private Player userPlayer;
 
 	private Player leftConputer;
 
 	private Player rightConputer;
 
-	private List<Card> lordCardList;
-
 	public BootFrame() {
-		init();
-		userPlayer = new PlayerUser(this,Player.POSITION_USER);
-		leftConputer = new PlayerConputer(this,Player.POSITION_LEFT);
-		rightConputer = new PlayerConputer(this,Player.POSITION_RIGHT);
-		initCard();
-		compete();
-		publish();
-	}
-
-	private void init() {
 		setSize(830, 620);
 		setVisible(true);
 		setResizable(false);
@@ -96,13 +78,13 @@ public class BootFrame extends JFrame {
 		menu.add(gameMenu);
 		menu.add(helpMenu);
 		this.setJMenuBar(menu);
-		lordLabel=new JLabel(new ImageIcon("images/dizhu.gif"));
-		lordLabel.setVisible(false);
-		lordLabel.setSize(40, 40);
-		container.add(lordLabel);
 	}
 
-	private void initCard(){
+	public void play(){
+		userPlayer = new PlayerUser(this,Player.POSITION_USER);
+		leftConputer = new PlayerConputer(this,Player.POSITION_LEFT);
+		rightConputer = new PlayerConputer(this,Player.POSITION_RIGHT);
+		
 		List<Card> cardList = new LinkedList<Card>();
 		for (int i = 1; i <= 5; i++) {
 			for (int j = 1; j <= 13; j++) {
@@ -122,7 +104,7 @@ public class BootFrame extends JFrame {
 			cardList.set(0, card);
 		}
 
-		lordCardList = new ArrayList<Card>();
+		List<Card> lordCardList = new ArrayList<Card>();
 		for(int i=0;i<cardList.size();i++){
 			Card card = cardList.get(i);
 			if(i >= 51){
@@ -152,47 +134,23 @@ public class BootFrame extends JFrame {
 		leftConputer.resetPosition(false);
 		rightConputer.order();
 		rightConputer.resetPosition(false); 
-	}
-
-	private void compete(){
-		int startPosition = 1; 
-		for(int i = startPosition; ;i++){
+		
+		Player lorder = null;
+		for(int i = 1; ;i++){ //startCompete = 1
 			Player player = getPlayer(i % 3);
 			player.compete(30);
 			if(player.isLord()){
-				lordPosition = player.getPosition();
+				lorder = player;
 				break;
 			}
 		}
+		lorder.lordinit(lordCardList);
 
-		for(Card card : lordCardList){
-			card.show();
-		}
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		Player lord = getPlayer(lordPosition);
-		lord.getCardHoldList().addAll(lordCardList);
-		lord.order();
-		lord.resetPosition(false);
-		lordLabel.setLocation(lord.getLordPoint()); 
-		lordLabel.setVisible(true); 
-
-		for(Card card : userPlayer.getCardHoldList()){
-			card.setClickable(true); 
-		}
-	}
-
-	private void publish(){
-		int publishTurn = lordPosition - 1;
-		while (true) {
-			Player player = getPlayer((++publishTurn) % 3);
+		for(int i = lorder.getPosition() - 1; ;i++){
+			Player player = getPlayer((++i) % 3);
 			player.publish(15);
 			if(player.getCardHoldList().isEmpty()){
-				if(player.getPosition() == Player.POSITION_USER){
+				if(player.getPosition() == Player.POSITION_USER){ 
 					JOptionPane.showMessageDialog(this, "you win!");
 				}else{
 					JOptionPane.showMessageDialog(this, "you loss!");
@@ -220,7 +178,7 @@ public class BootFrame extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		new BootFrame();
+		new BootFrame().play();;
 	}
 
 }

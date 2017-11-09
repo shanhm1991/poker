@@ -74,6 +74,14 @@ public class PlayerUser extends Player {
 		frame.container.add(publishButton);
 		frame.container.add(notPublishButton);
 	}
+	
+	@Override
+	public void lordinit(List<Card> lordCardList){
+		super.lordinit (lordCardList);
+		for(Card card : cardHoldList){
+			card.setClickable(true); 
+		}
+	}
 
 	@Override
 	public void compete(final int seconds) {
