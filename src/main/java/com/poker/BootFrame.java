@@ -145,9 +145,8 @@ public class BootFrame extends JFrame {
 			}
 		}
 		lorder.lordinit(lordCardList);
-
-		for(int i = lorder.getPosition() - 1; ;i++){
-			Player player = getPlayer((++i) % 3);
+		for(int i = lorder.getPosition(); ;i++){
+			Player player = getPlayer((i % 3));
 			player.publish(15);
 			if(player.getCardHoldList().isEmpty()){
 				if(player.getPosition() == Player.POSITION_USER){ 

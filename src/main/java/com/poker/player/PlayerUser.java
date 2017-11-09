@@ -3,7 +3,7 @@ package com.poker.player;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -105,33 +105,37 @@ public class PlayerUser extends Player {
 		notPublishButton.setVisible(false);
 	}
 
+	//list线程安全问题,不要直接用cardPublishList
 	private void confirmPublishCard() {
-		Iterator<Card> it = cardHoldList.iterator();
-		while(it.hasNext()) {
-			Card card = it.next();
+		List<Card> publishList = new ArrayList<Card>();
+		for(Card card : cardHoldList) {
 			if(card.isClicked()) {
-				it.remove();
-				cardPublishList.add(card);
+				publishList.add(card);
 			}
 		}
-		if(cardPublishList.isEmpty() || !isPublishAble()){
+		
+		if(publishList.isEmpty() || !isPublishAble(publishList)){
 			return;
 		}
 		Point point=new Point();
-		point.x = (770 / 2) - (cardPublishList.size() + 1) * 15 / 2;;
+		point.x = (770 / 2) - (publishList.size() + 1) * 15 / 2;;
 		point.y = 300;
-		for(int i=0,len=cardPublishList.size();i<len;i++){
-			cardPublishList.get(i).synmove(point);
+		for(Card card : publishList){
+			card.synmove(point);
 			point.x += 15;
+			cardHoldList.remove(card);
 		}
+		cardPublishList = publishList;
 		resetPosition(true);
 		clockFiled.setVisible(false);
 		clockEnd = true;
 		published = true;
 	}
 	
-	private boolean isPublishAble(){
-		Type ownType = new Type(cardPublishList);
+	
+	
+	private boolean isPublishAble(List<Card> publishList){
+		Type ownType = new Type(publishList);
 		int ownTypeValue = ownType.type();
 		if(ownTypeValue == Type.T0){
 			return false;
@@ -152,7 +156,7 @@ public class PlayerUser extends Player {
 
 		//有炸弹
 		if(ownTypeValue == Type.T4){
-			if(cardPublishList.size() == 2 || otherTypeValue != Type.T4){
+			if(publishList.size() == 2 || otherTypeValue != Type.T4){
 				return true;
 			}
 			if(otherPublishCards.size() == 2){//size=2是王炸
@@ -161,12 +165,12 @@ public class PlayerUser extends Player {
 			return ownType.valueT4() > otherType.valueT4();
 		}
 		//牌数或牌种不同
-		if(cardPublishList.size() != otherPublishCards.size() || ownTypeValue != otherTypeValue){
+		if(publishList.size() != otherPublishCards.size() || ownTypeValue != otherTypeValue){
 			return false;
 		}
 		//ownList.size=otherList.size、ownType=otherType
 		if(ownTypeValue == Type.T1 || ownTypeValue==Type.T2 || ownTypeValue==Type.T3){
-			return cardPublishList.get(0).getSingleValue() > otherPublishCards.get(0).getSingleValue();
+			return publishList.get(0).getSingleValue() > otherPublishCards.get(0).getSingleValue();
 		}
 		if(ownTypeValue == Type.T123){
 			return ownType.valueT123() > otherType.valueT123();

@@ -27,7 +27,7 @@ public class Card {
 
 	private  final Integer continueValue;
 
-	private boolean clicked;
+	private volatile boolean clicked;
 
 	private boolean clickable;
 

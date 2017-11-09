@@ -34,8 +34,6 @@ public abstract class Player {
 	 */
 	public static final int POSITION_RIGHT = 2;
 	
-	public static int lorderPosition;
-
 	protected List<Card> cardHoldList = new ArrayList<Card>();
 
 	protected List<Card> cardPublishList = new ArrayList<Card>();
@@ -45,6 +43,8 @@ public abstract class Player {
 	protected JLabel lordLabel; 
 
 	protected int position;
+	
+	protected int lorderPosition;
 
 	protected JTextField clockFiled;
 
@@ -81,7 +81,6 @@ public abstract class Player {
 	
 	public void lordinit(List<Card> lordCardList){
 		lorderPosition = position;
-		
 		for(Card card : lordCardList){
 			card.show();
 		}
@@ -134,7 +133,6 @@ public abstract class Player {
 			else 
 				point_y += 15;
 		}
-
 	}
 
 	/**

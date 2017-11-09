@@ -121,7 +121,7 @@ public class Type {
 			if(count == null) {
 				map.put(card, 1);
 			}else {
-				map.put(card, count++);
+				map.put(card, ++count);
 			}
 		}
 		distinctList.addAll(map.keySet());
