@@ -126,26 +126,25 @@ public class BootFrame extends JFrame {
 		for(int i=0;i<cardList.size();i++){
 			Card card = cardList.get(i);
 			if(i >= 51){
-				card.asynmove(new Point(300 + (i - 51) * 80, 10));
+				card.asynmove(new Point(300 + (i - 51) * 80, 10),container);
 				lordCardList.add(card);
 				continue;
 			}
 			switch ((i)%3) {
 			case 0:
-				card.asynmove(new Point(50,60+i*5));
+				card.asynmove(new Point(50,60+i*5),container);
 				leftConputer.getCardHoldList().add(card);
 				break;
 			case 1:
-				card.asynmove(new Point(180+i*7,450));
+				card.asynmove(new Point(180+i*7,450),container);
 				userPlayer.getCardHoldList().add(card);
 				card.show(); 
 				break;
 			case 2:
-				card.asynmove(new Point(700,60+i*5));
+				card.asynmove(new Point(700,60+i*5),container);
 				rightConputer.getCardHoldList().add(card);
 				break;
 			}
-			container.setComponentZOrder(card.getLabel(), 0);
 		}
 		userPlayer.order();
 		userPlayer.resetPosition(false);

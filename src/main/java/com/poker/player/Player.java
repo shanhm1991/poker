@@ -100,7 +100,7 @@ public abstract class Player {
 			if(syn) {
 				card.synmove(new Point(point_x,point_y));
 			}else {
-				card.asynmove(new Point(point_x,point_y));
+				card.asynmove(new Point(point_x,point_y),frame.container);
 			}
 			frame.container.setComponentZOrder(card.getLabel(), 0);
 			if(position == POSITION_USER)

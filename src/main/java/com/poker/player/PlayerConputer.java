@@ -74,7 +74,7 @@ public class PlayerConputer extends Player {
 		cardPublishList.addAll(publishCardList);
 		cardHoldList.removeAll(publishCardList);
 		for(Card card : publishCardList){
-			card.asynmove(point);
+			card.asynmove(point,frame.container);
 			point.y += 15;
 			card.show();
 		}

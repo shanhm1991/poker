@@ -1,5 +1,6 @@
 package com.poker;
 
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -102,7 +103,7 @@ public class Card {
 		}
 	}
 
-	public void asynmove(Point to) {
+	public void asynmove(Point to,Container container) {
 		Point from = label.getLocation();
 		if(to.x != from.x){
 			double k = (1.0) * (to.y - from.y) / (to.x - from.x);
@@ -121,6 +122,7 @@ public class Card {
 						@Override
 						public void run() {
 							label.setLocation(x,(int)y);
+							container.setComponentZOrder(label, 0);
 						}
 					});
 				} catch (InvocationTargetException e1) {
@@ -140,6 +142,7 @@ public class Card {
 				@Override
 				public void run() {
 					label.setLocation(to);
+					container.setComponentZOrder(label, 0);
 				}
 			});
 		} catch (InvocationTargetException e1) {
