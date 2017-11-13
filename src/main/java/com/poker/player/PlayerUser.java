@@ -105,12 +105,18 @@ public class PlayerUser extends Player {
 		notPublishButton.setVisible(false);
 	}
 
-	//list线程安全问题,不要直接用cardPublishList
+	/*
+	 * list线程安全问题,还有list.remove的equals问题
+	 * 所以每次cardHoldList和cardPublishList整个替换
+	 */
 	private void confirmPublishCard() {
 		List<Card> publishList = new ArrayList<Card>();
+		List<Card> holdList = new ArrayList<Card>();
 		for(Card card : cardHoldList) {
 			if(card.isClicked()) {
 				publishList.add(card);
+			}else{
+				holdList.add(card);
 			}
 		}
 		
@@ -122,17 +128,16 @@ public class PlayerUser extends Player {
 		point.y = 300;
 		for(Card card : publishList){
 			card.synmove(point);
-			point.x += 15;
-			cardHoldList.remove(card);
+			point.x += 15; 
 		}
+		
+		cardHoldList = holdList;
 		cardPublishList = publishList;
 		resetPosition(true);
 		clockFiled.setVisible(false);
 		clockEnd = true;
 		published = true;
 	}
-	
-	
 	
 	private boolean isPublishAble(List<Card> publishList){
 		Type ownType = new Type(publishList);
