@@ -106,8 +106,9 @@ public class PlayerUser extends Player {
 	}
 
 	/*
-	 * list线程安全问题,还有list.remove的equals问题
-	 * 所以每次cardHoldList和cardPublishList整个替换
+	 * list.remove(card)是根据equals来删，会导致误删
+	 * list.remove(index)每次删完都会重新移动数组，影响下一次删除
+	 * 所以每次cardHoldList和cardPublishList整个重新替换，而不要调用remove
 	 */
 	private void confirmPublishCard() {
 		List<Card> publishList = new ArrayList<Card>();
