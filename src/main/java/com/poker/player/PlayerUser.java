@@ -100,11 +100,11 @@ public class PlayerUser extends Player {
 		cardPublishList.clear();
 		publishButton.setVisible(true);
 		notPublishButton.setVisible(true);
-		clock(15);
+		clock(seconds);
 		publishButton.setVisible(false);
 		notPublishButton.setVisible(false);
 	}
-
+	
 	/*
 	 * list.remove(card)是根据equals来删，会导致误删
 	 * list.remove(index)每次删完都会重新移动数组，影响下一次删除

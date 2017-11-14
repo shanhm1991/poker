@@ -90,16 +90,21 @@ public abstract class Player {
 			e.printStackTrace();
 		}
 		
-		cardHoldList.addAll(lordCardList);
-		order();
-		resetPosition(false);
-		
 		lordLabel=new JLabel(new ImageIcon("images/dizhu.gif"));
 		lordLabel.setSize(40, 40);
 		lordLabel.setVisible(true);
 		lordLabel.setLocation(lordPoint); 
-		
 		frame.container.add(lordLabel);
+		
+		cardHoldList.addAll(lordCardList);
+		order();
+		
+		if(lorderPosition != POSITION_USER){
+			for(Card card : lordCardList){
+				card.back();
+			}
+		}
+		resetPosition(false);
 	}
 
 	public void resetPosition(boolean syn){

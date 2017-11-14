@@ -7,11 +7,11 @@ import java.util.concurrent.Callable;
 import com.poker.Card;
 import com.poker.player.Player;
 
-public class IdeaPublish implements Callable<List<Card>>{
+public class ThreadPublish implements Callable<List<Card>>{
 
 	private Player conputer;
 
-	public IdeaPublish(Player conputer) {
+	public ThreadPublish(Player conputer) {
 		this.conputer = conputer;
 	}
 
