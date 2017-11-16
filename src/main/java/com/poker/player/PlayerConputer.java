@@ -52,11 +52,15 @@ public class PlayerConputer extends Player {
 		try {
 			lord = competeThread.get(seconds,TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			//主线程忽略中断
 		} catch (ExecutionException e) {
+			//任务异常，强行结束线程
 			competeThread.cancel(true);
+			lord = false;
 		} catch (TimeoutException e) {
+			//任务超时，强行结束线程
 			competeThread.cancel(true);
+			lord = false;
 		}finally{
 			clockThread.interrupt();
 		}
@@ -68,7 +72,7 @@ public class PlayerConputer extends Player {
 			clockFiled.setText("不 抢");
 			clockFiled.setVisible(true);
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(800);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -94,24 +98,30 @@ public class PlayerConputer extends Player {
 		};
 		clockThread.start();
 		//主线程阻塞等待
-		List<Card> publishCardList = null;
+		List<Card> publishList = null;
 		try {
-			publishCardList = publishThread.get(seconds, TimeUnit.SECONDS);
+			publishList = publishThread.get(seconds, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			publishCardList = new ArrayList<Card>();
+			publishList = new ArrayList<Card>();
 			publishThread.cancel(true);
 		} catch (TimeoutException e) {
-			publishCardList = new ArrayList<Card>();
+			publishList = new ArrayList<Card>();
 			publishThread.cancel(true);
 		}finally{
 			clockThread.interrupt();
 		}
 
-		if(publishCardList.isEmpty()){
+		if(publishList.isEmpty()){
 			clockFiled.setVisible(true);
 			clockFiled.setText("不 要");
+			try {
+				Thread.sleep(800);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			clockFiled.setVisible(false);
 			return;
 		}
 
@@ -120,14 +130,29 @@ public class PlayerConputer extends Player {
 			point.x = 200;
 		if (position == 2)
 			point.x = 550;
-		point.y = (400 / 2) - (publishCardList.size() + 1) * 15 / 2;
-		cardPublishList.addAll(publishCardList);
-		cardHoldList.removeAll(publishCardList);
-		for(Card card : publishCardList){
+		point.y = (400 / 2) - (publishList.size() + 1) * 15 / 2;
+		for(Card card : publishList){
 			card.asynmove(point,frame.container);
 			point.y += 15;
 			card.show();
 		}
+
+		List<Card> holdList = new ArrayList<Card>();
+		for(Card hCard : cardHoldList){
+			boolean publish = false;
+			for(Card pCard : publishList){
+				if(hCard.getName().equals(pCard.getName())){
+					publish = true;
+					break;
+				}
+			}
+			if(!publish){
+				holdList.add(hCard);
+			}
+		}
+
+		cardPublishList = publishList;
+		cardHoldList = holdList;
 		resetPosition(false);
 	}
 }
