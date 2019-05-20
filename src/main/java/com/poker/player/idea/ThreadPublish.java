@@ -4,9 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import com.poker.Card;
+import com.poker.frame.Card;
 import com.poker.player.Player;
 
+/**
+ * 
+ * @author shanhm1991
+ *
+ */
 public class ThreadPublish implements Callable<List<Card>>{
 
 	private Player conputer;

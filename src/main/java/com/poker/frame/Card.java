@@ -1,4 +1,4 @@
-package com.poker;
+package com.poker.frame;
 
 import java.awt.Container;
 import java.awt.Point;
@@ -13,19 +13,24 @@ import javax.swing.SwingUtilities;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 
+ * @author shanhm1991
+ *
+ */
 @Data
-@EqualsAndHashCode(of = {"value"},callSuper = false)
+@EqualsAndHashCode(of = {"name"},callSuper = false)
 public class Card {
 
 	private  final String name;
 
 	private  final Integer color;
 
-	private  final Integer value;
+	private  final int value;
 
-	private  final Integer singleValue;
+	private  final Integer singleValue; //作为单张的牌力值
 
-	private  final Integer continueValue;
+	private  final Integer continueValue; //作为顺子时的牌力值
 
 	private volatile boolean clicked;
 
@@ -36,11 +41,14 @@ public class Card {
 	public Card(String name){
 		this.name = name;
 		color = Integer.parseInt(name.substring(0,1));
+
+		//大小王 单张牌力值+50
 		if(color == 5){
 			value = Integer.parseInt(name.substring(2,name.length())) + 50;
 		}else{
 			value = Integer.parseInt(name.substring(2,name.length()));
 		}
+
 		if(value == 1){
 			singleValue = value + 13;
 			continueValue = value + 13;
@@ -151,7 +159,7 @@ public class Card {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	public void synmove(Point to) {
 		label.synmove(to);
 	}
@@ -210,5 +218,11 @@ public class Card {
 			}
 			this.setLocation(to);
 		}
+	}
+
+	@Override
+	public String toString(){
+		return "Card(name=" + name + ", color=" + color + ", value=" + value + ", singleValue=" 
+				+ singleValue + ", continueValue=" + continueValue + ", clicked=" + clicked + ", clickable=" + clickable;
 	}
 }

@@ -8,19 +8,24 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.poker.Card;
-import com.poker.BootFrame;
+import com.poker.frame.Frame;
+import com.poker.frame.Card;
 import com.poker.player.idea.ThreadCompete;
 import com.poker.player.idea.ThreadPublish;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 
+ * @author shanhm1991
+ *
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class PlayerConputer extends Player {
 
-	public PlayerConputer(BootFrame frame,int position) {
+	public PlayerConputer(Frame frame,int position) {
 		super(frame,position);
 		switch(position){
 		case POSITION_LEFT:
@@ -40,7 +45,8 @@ public class PlayerConputer extends Player {
 		//计算抢地主线程
 		FutureTask<Boolean> competeThread = new FutureTask<Boolean>(new ThreadCompete(this));
 		new Thread(competeThread).start();
-		//时钟线程
+		
+		//计时读秒
 		Thread clockThread = new Thread(){
 			@Override
 			public void run() {
@@ -48,6 +54,7 @@ public class PlayerConputer extends Player {
 			}
 		};
 		clockThread.start();
+		
 		//主线程阻塞等待
 		try {
 			lord = competeThread.get(seconds,TimeUnit.SECONDS);

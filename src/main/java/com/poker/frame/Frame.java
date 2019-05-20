@@ -1,4 +1,4 @@
-package com.poker;
+package com.poker.frame;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -20,7 +20,12 @@ import com.poker.player.Player;
 import com.poker.player.PlayerConputer;
 import com.poker.player.PlayerUser;
 
-public class BootFrame extends JFrame {
+/**
+ * 
+ * @author shanhm1991
+ *
+ */
+public class Frame extends JFrame {
 
 	private static final long serialVersionUID = -28832292935664928L;
 
@@ -38,7 +43,7 @@ public class BootFrame extends JFrame {
 
 	private Player rightConputer;
 
-	public BootFrame() {
+	public Frame() {
 		setSize(830, 620);
 		setVisible(true);
 		setResizable(false);
@@ -85,18 +90,24 @@ public class BootFrame extends JFrame {
 		leftConputer = new PlayerConputer(this,Player.POSITION_LEFT);
 		rightConputer = new PlayerConputer(this,Player.POSITION_RIGHT);
 		
+		//初始化牌
 		List<Card> cardList = new LinkedList<Card>();
-		for (int i = 1; i <= 5; i++) {
+		for (int i = 1; i <= 4; i++) {
 			for (int j = 1; j <= 13; j++) {
-				if ((i == 5) && (j > 2)){
-					break;
-				}
 				Card card = new Card(i + "-" + j).init();
 				container.add(card.getLabel());
 				cardList.add(card);
 			}
 		}
-		for(int i=0;i<100;i++){
+		Card card1 = new Card("5-1").init();
+		container.add(card1.getLabel());
+		cardList.add(card1);
+		Card card2 = new Card("5-2").init();
+		container.add(card2.getLabel());
+		cardList.add(card2);
+		
+		//洗牌
+		for(int i = 0;i < 100;i++){
 			SecureRandom random = new SecureRandom();
 			int index = random.nextInt(54);
 			Card card = cardList.get(index);
@@ -104,30 +115,34 @@ public class BootFrame extends JFrame {
 			cardList.set(0, card);
 		}
 
+		//发牌
 		List<Card> lordCardList = new ArrayList<Card>();
-		for(int i=0;i<cardList.size();i++){
+		for(int i=0; i<cardList.size(); i++){
 			Card card = cardList.get(i);
 			if(i >= 51){
 				card.asynmove(new Point(300 + (i - 51) * 80, 10),container);
 				lordCardList.add(card);
 				continue;
 			}
+			
 			switch ((i)%3) {
 			case 0:
-				card.asynmove(new Point(50,60+i*5),container);
+				card.asynmove(new Point(50, 60 + i * 5),container);
 				leftConputer.getCardHoldList().add(card);
 				break;
 			case 1:
-				card.asynmove(new Point(180+i*7,450),container);
+				card.asynmove(new Point(180 + i * 7, 450),container);
 				userPlayer.getCardHoldList().add(card);
 				card.show(); 
 				break;
 			case 2:
-				card.asynmove(new Point(700,60+i*5),container);
+				card.asynmove(new Point(700, 60 + i * 5),container);
 				rightConputer.getCardHoldList().add(card);
 				break;
 			}
 		}
+		
+		//理牌
 		userPlayer.order();
 		userPlayer.resetPosition(false);
 		leftConputer.order();
@@ -135,24 +150,30 @@ public class BootFrame extends JFrame {
 		rightConputer.order();
 		rightConputer.resetPosition(false); 
 		
+		//抢地主
 		Player lorder = null;
-		for(int i = 1; ;i++){ //startCompete = 1
+		for(int i = 1; ;i++){ //玩家开始抢
 			Player player = getPlayer(i % 3);
-			player.compete(30);
+			player.compete(15);
 			if(player.isLord()){
 				lorder = player;
 				break;
 			}
 		}
+		
+		//地主理牌
 		lorder.lordinit(lordCardList);
+		
+		//从地主开始出牌
 		for(int i = lorder.getPosition(); ;i++){
 			Player player = getPlayer((i % 3));
 			player.publish(15);
+			
 			if(player.getCardHoldList().isEmpty()){
 				if(player.getPosition() == Player.POSITION_USER){ 
-					JOptionPane.showMessageDialog(this, "you win!");
+					JOptionPane.showMessageDialog(this, "winner!");
 				}else{
-					JOptionPane.showMessageDialog(this, "you loss!");
+					JOptionPane.showMessageDialog(this, "losser!");
 				}
 				return;
 			}
@@ -174,10 +195,6 @@ public class BootFrame extends JFrame {
 
 	private void showAbout(){
 		JOptionPane.showMessageDialog(this, "version 1.0 shanhm1991@163.com");
-	}
-
-	public static void main(String[] args) {
-		new BootFrame().play();;
 	}
 
 }

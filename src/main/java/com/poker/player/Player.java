@@ -10,12 +10,17 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-import com.poker.Card;
-import com.poker.BootFrame;
+import com.poker.frame.Frame;
+import com.poker.frame.Card;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 
+ * @author shanhm1991
+ *
+ */
 @Data
 @EqualsAndHashCode(of = {"position"},callSuper = false)
 public abstract class Player {
@@ -54,11 +59,11 @@ public abstract class Player {
 
 	protected volatile boolean clockEnd = true;
 	
-	protected BootFrame frame;
+	protected Frame frame;
 
 	private Thread clockThread;
 
-	public Player(BootFrame frame,int position){
+	public Player(Frame frame,int position){
 		this.frame = frame;
 		this.position = position;
 		clockFiled = new JTextField("倒计时:");

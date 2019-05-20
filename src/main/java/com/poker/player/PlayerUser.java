@@ -8,11 +8,16 @@ import java.util.List;
 
 import javax.swing.JButton;
 
-import com.poker.BootFrame;
-import com.poker.Card;
-import com.poker.Type;
+import com.poker.frame.Frame;
+import com.poker.frame.Card;
+import com.poker.frame.Type;
+import com.poker.frame.Util;
 
-
+/**
+ * 
+ * @author shanhm1991
+ *
+ */
 public class PlayerUser extends Player {
 
 	private JButton competeButton;
@@ -23,7 +28,7 @@ public class PlayerUser extends Player {
 
 	private JButton notPublishButton;
 	
-	public PlayerUser(BootFrame frame,int position) {
+	public PlayerUser(Frame frame,int position) {
 		super(frame,position);
 		lordPoint = new Point(80,430);
 		clockFiled.setBounds(374, 360, 60, 20);
@@ -87,7 +92,22 @@ public class PlayerUser extends Player {
 	public void compete(final int seconds) {
 		competeButton.setVisible(true);
 		notCompeteButton.setVisible(true);
+		
+		
+		List<Card> list = cardHoldList;
+		//测试计算出牌
+		new Thread(){
+			public void run(){
+				
+				Util.getT4(list);
+				
+				
+			}
+		}.start();
+		
+		
 		clock(seconds);
+		
 		competeButton.setVisible(false);
 		notCompeteButton.setVisible(false);
 	}
@@ -140,6 +160,7 @@ public class PlayerUser extends Player {
 		published = true;
 	}
 	
+	//接牌
 	private boolean isPublishAble(List<Card> publishList){
 		Type ownType = new Type(publishList);
 		int ownTypeValue = ownType.type();

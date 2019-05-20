@@ -4,6 +4,11 @@ import java.util.concurrent.Callable;
 
 import com.poker.player.Player;
 
+/**
+ * 
+ * @author shanhm1991
+ *
+ */
 public class ThreadCompete implements Callable<Boolean>{
 	
 	private Player conputer;
