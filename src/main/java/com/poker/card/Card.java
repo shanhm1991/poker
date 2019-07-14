@@ -1,4 +1,4 @@
-package com.poker.frame;
+package com.poker.card;
 
 import java.awt.Container;
 import java.awt.Point;
@@ -15,11 +15,13 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 
+ * 单张牌对象
+ * 
  * @author shanhm1991
  *
  */
 @Data
-@EqualsAndHashCode(of = {"value"},callSuper = false)
+@EqualsAndHashCode(of = {"value"}, callSuper = false)
 public class Card {
 
 	private  final String name;
@@ -224,17 +226,24 @@ public class Card {
 	public String toString(){
 		String v = "";
 		String c = "";
-		
-		if(value == 51){
-			return "小王";
-		}else if(value == 52){
-			return "大王";
-		}else if(value == 1){
-			v = "A";
-		}else{
+
+		switch(value){
+		case 51:
+			v = "小王"; break;
+		case 52:
+			v = "大王"; break;
+		case 1:
+			v = "A"; break;
+		case 11:
+			v = "J"; break;
+		case 12:
+			v = "Q"; break;
+		case 13:
+			v = "K"; break;
+		default :
 			v = String.valueOf(value);
 		}
-		
+
 		switch(color){
 		case 1:
 			c = "黑桃"; break;
@@ -247,5 +256,5 @@ public class Card {
 		}
 		return v + c;
 	}
-	
+
 }

@@ -2,14 +2,18 @@ package com.poker.player;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.poker.frame.Card;
+import com.poker.card.Card;
+import com.poker.card.Type;
 import com.poker.frame.Frame;
 
 import lombok.Data;
@@ -69,6 +73,7 @@ public class Conputer extends Player {
 			competeTask.cancel(true);
 			isLord = false;
 		}finally{
+			setClockEnd(true); 
 			clockThread.interrupt();
 		}
 
@@ -169,18 +174,79 @@ public class Conputer extends Player {
 	 * @author shanhm1991
 	 *
 	 */
-	private static class CompeteTask implements Callable<Boolean>{
+	private class CompeteTask implements Callable<Boolean>{
 		
 		@Override
 		public Boolean call() throws Exception {
+			Type type = new Type(cardHoldList);
+			//判断散乱程度
+			List<Card> distinctList = type.distinctList;
+			Collections.sort(distinctList,new Comparator<Card>() {
+				@Override
+				public int compare(Card c1, Card c2) {
+					return c2.getValue() - c1.getValue();
+				}
+			});
 			
+			//找出缺数进行分段, 两个缺数之差如果大于5则可能组成顺子
+			List<Card> lackList = new ArrayList<>();
+			for(int i = 1; i <= 13; i++){
+				Card card = new Card("1-" + i);
+				if(type.count(card) == 0){
+					lackList.add(card);
+				}
+			}
 			
-			Thread.sleep(3000);
-
+			List<Card> singleList = new ArrayList<>();//只能单出的牌
+			ListIterator<Card> it = lackList.listIterator();
+		    int prev = 0;
+			while(it.hasNext()){
+				Card card = it.next();
+				int next = card.getValue();
+				int interval = next - prev;
+				if(interval == 0){
+					continue;
+				}
+				
+				//连续小于5，且仅有一张的牌只能单出或被三带
+				if(interval <= 5){
+					for(int i = prev + 1;i < next;i++){
+						Card single = new Card("1-" + i);
+						if(type.count(single) == 1){
+							singleList.add(single);
+						}
+					}
+				}else{
+					//获取连续牌的最小手数， 确定是否单出
+					int total  = 0;
+					for(int i = prev + 1;i < next;i++){
+						Card c = new Card("1-" + i);
+						total += type.count(c);
+					}
+				}
+				prev = next;
+			}
 			
+			System.out.println(name + "  " + distinctList); 
+			System.out.println(name + "  " + lackList); 
+			System.out.println(name + "  " + singleList); 
+			
+//			int x = type.count(new Card("5-1")); //小王 3分
+//			int y = type.count(new Card("5-2")); //大王 2分
+//			int xx = type.count(new Card("1-2")); //2字 1分
+//			if((3 * x + 2 * y + xx) < 4){
+//				return false;
+//			}
+			
+			Thread.sleep(3000); //让秒表走一会儿
 			return false;
 		}
 
+		
+		
+		
+		
+		
 	}
 	
 	/**

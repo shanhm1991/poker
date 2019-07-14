@@ -17,8 +17,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 import com.poker.player.Player;
+import com.poker.card.Card;
 import com.poker.player.Conputer;
-import com.poker.player.User;
+import com.poker.player.Person;
 
 /**
  * 
@@ -31,7 +32,7 @@ public class Frame extends JFrame {
 
 	public Container container = null;
 
-	private Player user;
+	private Player person;
 
 	private Player leftConputer;
 
@@ -84,7 +85,7 @@ public class Frame extends JFrame {
 	}
 
 	public void play(){
-		user = new User(this,Player.USER);
+		person = new Person(this,Player.PERSON);
 		leftConputer = new Conputer(this,Player.CONPUTER_LEFT);
 		rightConputer = new Conputer(this,Player.CONPUTER_RIGHT);
 		
@@ -131,7 +132,7 @@ public class Frame extends JFrame {
 				break;
 			case 1:
 				card.asynmove(new Point(180 + i * 7, 450), container);
-				user.getCardHoldList().add(card);
+				person.getCardHoldList().add(card);
 				card.show(); 
 				break;
 			case 2:
@@ -143,11 +144,11 @@ public class Frame extends JFrame {
 		}
 		
 		//理牌
-		user.order();
-		user.resetPosition(false);
-		leftConputer.order();
+		person.order(false);
+		person.resetPosition(false);
+		leftConputer.order(false);
 		leftConputer.resetPosition(false);
-		rightConputer.order();
+		rightConputer.order(false);
 		rightConputer.resetPosition(false); 
 		
 		//抢地主
@@ -169,7 +170,7 @@ public class Frame extends JFrame {
 			player.publish(15);
 			
 			if(player.getCardHoldList().isEmpty()){
-				if(player.getPosition() == Player.USER){ 
+				if(player.getPosition() == Player.PERSON){ 
 					JOptionPane.showMessageDialog(this, "winner!");
 				}else{
 					JOptionPane.showMessageDialog(this, "losser!");
@@ -183,8 +184,8 @@ public class Frame extends JFrame {
 		switch(position){
 		case Player.CONPUTER_LEFT:
 			return leftConputer;
-		case Player.USER:
-			return user;
+		case Player.PERSON:
+			return person;
 		case Player.CONPUTER_RIGHT:
 			return rightConputer;
 		default:

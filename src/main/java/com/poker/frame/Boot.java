@@ -1,6 +1,4 @@
-package com.poker;
-
-import com.poker.frame.Frame;
+package com.poker.frame;
 
 /**
  * 

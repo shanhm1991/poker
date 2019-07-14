@@ -1,4 +1,4 @@
-package com.poker.frame;
+package com.poker.card;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 
+ * 手牌类型
  * 
  * @author shanhm1991
  *
@@ -77,6 +79,8 @@ public class Type {
 	private int type = T0;
 
 	private List<Card> cardList = new ArrayList<Card>();
+	
+	private Map<Card,Integer> cardMap = new HashMap<Card,Integer>();
 
 	public List<Card> listT1 = new ArrayList<Card>();
 
@@ -90,19 +94,18 @@ public class Type {
 
 	public Type(List<Card> cardList){
 		this.cardList = cardList;
-		Map<Card,Integer> map = new HashMap<Card,Integer>();
 		for(Card card : cardList) {
-			Integer count = map.get(card);
+			Integer count = cardMap.get(card);
 			if(count == null) {
-				map.put(card, 1);
+				cardMap.put(card, 1);
 			}else {
-				map.put(card, ++count);
+				cardMap.put(card, ++count);
 			}
 		}
-		distinctList.addAll(map.keySet());
+		distinctList.addAll(cardMap.keySet());
 
 		for(Card card : distinctList) {
-			switch(map.get(card)) {
+			switch(cardMap.get(card)) {
 			case 1:
 				listT1.add(card); break;
 			case 2:
@@ -115,6 +118,14 @@ public class Type {
 		}
 
 		this.type = parseType();
+	}
+	
+	public int count(Card card){
+		Integer count = cardMap.get(card);
+		if(count == null){
+			return 0;
+		}
+		return count;
 	}
 
 	public int getType() {
@@ -154,7 +165,7 @@ public class Type {
 			if(listT3.size() > 0){
 				switch(listSize) {
 				case 4:
-					return Type.T31;
+					return Type.T31; //T22
 				case 5:
 					return Type.T32;
 				case 6:

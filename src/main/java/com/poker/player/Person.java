@@ -8,9 +8,9 @@ import java.util.List;
 
 import javax.swing.JButton;
 
-import com.poker.frame.Card;
+import com.poker.card.Card;
+import com.poker.card.Type;
 import com.poker.frame.Frame;
-import com.poker.frame.Type;
 
 /**
  * 
@@ -19,7 +19,7 @@ import com.poker.frame.Type;
  * @author shanhm1991
  *
  */
-public class User extends Player {
+public class Person extends Player {
 
 	private JButton competeButton;
 
@@ -29,7 +29,7 @@ public class User extends Player {
 
 	private JButton notPublishButton;
 
-	public User(Frame frame,int position) {
+	public Person(Frame frame,int position) {
 		super(frame,position);
 		name = "玩家";
 

@@ -12,13 +12,14 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
+import com.poker.card.Card;
 import com.poker.frame.Frame;
-import com.poker.frame.Card;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
+ * 
  * 
  * @author shanhm1991
  *
@@ -33,7 +34,7 @@ public abstract class Player {
 	
 	public static final int CONPUTER_RIGHT = 2;
 
-	public static final int USER = 1;
+	public static final int PERSON = 1;
 	
 	protected String name;
 	
@@ -69,14 +70,18 @@ public abstract class Player {
 		frame.container.add(clockFiled);
 	}
 
-	public void order(){
+	public void order(boolean isLord){
 		Collections.sort(cardHoldList,new Comparator<Card>() {
 			@Override
 			public int compare(Card c1, Card c2) {
 				return c2.getSingleValue() - c1.getSingleValue();
 			}
 		});
-		LOG.info(name + ": 初始牌=" + cardHoldList);
+		if(isLord){
+			LOG.info(name + ": 抢地主=" + cardHoldList);
+		}else{
+			LOG.info(name + ": 初始牌=" + cardHoldList);
+		}
 	}
 
 	public abstract void compete(final int seconds);
@@ -101,10 +106,9 @@ public abstract class Player {
 		frame.container.add(lordLabel);
 		
 		cardHoldList.addAll(lordCardList);
-		order();
+		order(true);
 		
-		LOG.info(name + ": 抢地主=" + cardHoldList);
-		if(lorderPosition != USER){
+		if(lorderPosition != PERSON){
 			for(Card card : lordCardList){
 				card.back();
 			}
@@ -120,7 +124,7 @@ public abstract class Player {
 			point_x = 50;
 			point_y = (450 / 2) - (cardHoldList.size() + 1) * 15 / 2;
 			break;
-		case USER:
+		case PERSON:
 			point_x = (800 / 2) - (cardHoldList.size() + 1) * 21 / 2;
 			point_y = 450;
 			break;
@@ -138,7 +142,7 @@ public abstract class Player {
 				card.asynmove(new Point(point_x,point_y),frame.container);
 			}
 			frame.container.setComponentZOrder(card.getLabel(), 0);
-			if(position == USER)
+			if(position == PERSON)
 				point_x += 21;
 			else 
 				point_y += 15;
