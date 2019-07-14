@@ -13,6 +13,7 @@ import java.util.Map;
  *
  */
 public class Type {
+
 	/**
 	 * 不出
 	 */
@@ -29,7 +30,7 @@ public class Type {
 	public static final int T2 = 2;
 
 	/**
-	 * 3不带
+	 * 三不带
 	 */
 	public static final int T3 = 3;
 
@@ -49,12 +50,12 @@ public class Type {
 	public static final int T222 = 222;
 
 	/**
-	 * 3带1
+	 * 三带一
 	 */
 	public static final int T31 = 31;
 
 	/**
-	 * 3带2
+	 * 三带二
 	 */
 	public static final int T32 = 32;
 
@@ -64,14 +65,16 @@ public class Type {
 	public static final int T33 = 33;
 
 	/**
-	 * 飞机带单牌
+	 * 飞机带单
 	 */
 	public static final int T3312 = 3312;
 
 	/**
-	 * 飞机带对子
+	 * 飞机带双
 	 */
 	public static final int T3322 = 3322;
+
+	private int type = T0;
 
 	private List<Card> cardList = new ArrayList<Card>();
 
@@ -87,39 +90,6 @@ public class Type {
 
 	public Type(List<Card> cardList){
 		this.cardList = cardList;
-		//		Collections.sort(cardList,new Comparator<Card>() {
-		//			@Override
-		//			public int compare(Card c1, Card c2) {
-		//				return c2.getValue() - c1.getValue();
-		//			}
-		//		});
-		//		for(int m=0;m<cardList.size();m++){
-		//			Card mCard = cardList.get(m);
-		//			int cradCount = 0;
-		//			for(int n=m;n<cardList.size();n++,cradCount++ ){
-		//				Card nCard = cardList.get(n);
-		//				if(nCard.getValue() == mCard.getValue()){
-		//					continue;
-		//				}else{
-		//					break;
-		//				}
-		//			}
-		//			m = m + cradCount - 1;//抵销掉自增的1 
-		//			switch(cradCount){
-		//			case 1:
-		//				listT1.add(mCard); break;
-		//			case 2:
-		//				listT2.add(mCard); break;
-		//			case 3:
-		//				listT3.add(mCard); break;
-		//			case 4:
-		//				listT4.add(mCard); break;
-		//			}
-		//		}
-		//		distinctList.addAll(listT1);
-		//		distinctList.addAll(listT2);
-		//		distinctList.addAll(listT3);
-		//		distinctList.addAll(listT4);
 		Map<Card,Integer> map = new HashMap<Card,Integer>();
 		for(Card card : cardList) {
 			Integer count = map.get(card);
@@ -130,6 +100,7 @@ public class Type {
 			}
 		}
 		distinctList.addAll(map.keySet());
+
 		for(Card card : distinctList) {
 			switch(map.get(card)) {
 			case 1:
@@ -142,11 +113,18 @@ public class Type {
 				listT4.add(card); break;
 			}
 		}
+
+		this.type = parseType();
 	}
 
-	public int type(){
+	public int getType() {
+		return type;
+	}
+
+	private int parseType(){
 		int listSize = cardList.size();
 		int distinctSize = distinctList.size();
+		
 		//只有一种牌的牌型
 		if(distinctSize == 1) {
 			switch(listSize) {
@@ -159,12 +137,15 @@ public class Type {
 			case 4:
 				return Type.T4;
 			}
+			System.out.println("1");
 			return Type.T0;
 		}
+
 		//炸弹只能单出
 		if(listT4.size() > 0){
 			return Type.T0;
 		}
+
 		//只有两种牌的牌型
 		if(distinctSize == 2){
 			if(cardList.get(0).getValue() > 50 && cardList.get(1).getValue() > 50){
@@ -182,32 +163,39 @@ public class Type {
 			}
 			return Type.T0;
 		}
+
 		//4张以下至多只能有两种牌型
 		if(listSize <= 4){
 			return Type.T0;
 		}
+
 		//listSize > 4
 		//飞机
 		if(listT1.isEmpty() && listT2.isEmpty() && value123(listT3) != 0){ 
 			return Type.T33;
 		}
+
 		//连对
 		if(listT1.isEmpty() && listT3.isEmpty() && value123(listT2) != 0){
 			return Type.T222;
 		}
+
 		//顺子
 		if(listT2.isEmpty() && listT3.isEmpty() && value123(listT1) != 0){
 			return Type.T123;
 		}
+
 		//飞机带单
 		if(listT3.size() == listT1.size() && listT2.isEmpty() && value123(listT3) != 0){
 			return Type.T3312;
 
 		}
+
 		//飞机带双
 		if(listT3.size() == listT2.size() && listT1.isEmpty() && value123(listT3) != 0){
 			return Type.T3322;
 		}
+
 		return Type.T0;
 	}
 
@@ -238,9 +226,11 @@ public class Type {
 				return c2.getValue() - c1.getValue();
 			}
 		});
+
 		if(list.get(0).getValue() - list.get(list.size() - 1).getValue() == list.size() - 1){
 			return list.get(0).getValue();
 		}
+
 		//A字顺 
 		if(list.contains(new Card("1-1"))){ 
 			Collections.sort(list,new Comparator<Card>() {
@@ -249,10 +239,42 @@ public class Type {
 					return c2.getContinueValue() - c1.getContinueValue();
 				}
 			});
+
 			if(list.get(0).getContinueValue() - list.get(list.size() - 1).getContinueValue() == list.size() - 1){
 				return list.get(0).getContinueValue();
 			}
 		}
 		return 0;
 	}
+
+	@Override
+	public String toString() {
+		switch(type){
+		case T1:
+			return "单张";
+		case T2:
+			return "对子";
+		case T3:
+			return "三不带";
+		case T4:
+			return "炸弹";
+		case T123:
+			return "顺子";
+		case T222:
+			return "连对";
+		case T31:
+			return "三带一";
+		case T32:
+			return "三带二";
+		case T33:
+			return "飞机";
+		case T3312:
+			return "飞机带单";
+		case T3322:
+			return "飞机带双";
+		default:
+			return "";
+		}
+	}
+	
 }

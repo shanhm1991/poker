@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
  *
  */
 @Data
-@EqualsAndHashCode(of = {"name"},callSuper = false)
+@EqualsAndHashCode(of = {"value"},callSuper = false)
 public class Card {
 
 	private  final String name;
@@ -222,7 +222,30 @@ public class Card {
 
 	@Override
 	public String toString(){
-		return "Card(name=" + name + ", color=" + color + ", value=" + value + ", singleValue=" 
-				+ singleValue + ", continueValue=" + continueValue + ", clicked=" + clicked + ", clickable=" + clickable;
+		String v = "";
+		String c = "";
+		
+		if(value == 51){
+			return "小王";
+		}else if(value == 52){
+			return "大王";
+		}else if(value == 1){
+			v = "A";
+		}else{
+			v = String.valueOf(value);
+		}
+		
+		switch(color){
+		case 1:
+			c = "黑桃"; break;
+		case 2:
+			c = "红桃"; break;
+		case 3:
+			c = "梅花"; break;
+		case 4:
+			c = "方块"; break;
+		}
+		return v + c;
 	}
+	
 }

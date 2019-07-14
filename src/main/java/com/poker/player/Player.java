@@ -10,6 +10,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
+
 import com.poker.frame.Frame;
 import com.poker.frame.Card;
 
@@ -24,20 +26,16 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(of = {"position"},callSuper = false)
 public abstract class Player {
-	/**
-	 * 左手电脑
-	 */
-	public static final int POSITION_LEFT = 0;
+	
+	protected static final Logger LOG = Logger.getLogger(Player.class);
+	
+	public static final int CONPUTER_LEFT = 0;
+	
+	public static final int CONPUTER_RIGHT = 2;
 
-	/**
-	 * 玩家
-	 */
-	public static final int POSITION_USER = 1;
-
-	/**
-	 * 右手电脑
-	 */
-	public static final int POSITION_RIGHT = 2;
+	public static final int USER = 1;
+	
+	protected String name;
 	
 	protected List<Card> cardHoldList = new ArrayList<Card>();
 
@@ -53,11 +51,11 @@ public abstract class Player {
 
 	protected JTextField clockFiled;
 
-	protected volatile boolean lord;
+	protected volatile boolean isLord;
 
 	protected volatile boolean published;
 
-	protected volatile boolean clockEnd = true;
+	protected volatile boolean isClockEnd = true;
 	
 	protected Frame frame;
 
@@ -104,7 +102,7 @@ public abstract class Player {
 		cardHoldList.addAll(lordCardList);
 		order();
 		
-		if(lorderPosition != POSITION_USER){
+		if(lorderPosition != USER){
 			for(Card card : lordCardList){
 				card.back();
 			}
@@ -116,15 +114,15 @@ public abstract class Player {
 		int point_x = 0;
 		int point_y = 0;
 		switch(position){
-		case POSITION_LEFT:
+		case CONPUTER_LEFT:
 			point_x = 50;
 			point_y = (450 / 2) - (cardHoldList.size() + 1) * 15 / 2;
 			break;
-		case POSITION_USER:
+		case USER:
 			point_x = (800 / 2) - (cardHoldList.size() + 1) * 21 / 2;
 			point_y = 450;
 			break;
-		case POSITION_RIGHT:
+		case CONPUTER_RIGHT:
 			point_x = 700;
 			point_y = (450 / 2) - (cardHoldList.size() + 1) * 15 / 2;
 			break;
@@ -138,7 +136,7 @@ public abstract class Player {
 				card.asynmove(new Point(point_x,point_y),frame.container);
 			}
 			frame.container.setComponentZOrder(card.getLabel(), 0);
-			if(position == POSITION_USER)
+			if(position == USER)
 				point_x += 21;
 			else 
 				point_y += 15;
@@ -148,26 +146,35 @@ public abstract class Player {
 	/**
 	 * 时钟放在主线程中走
 	 */
-	protected void clock(final int seconds){
-		clockEnd = false;
+	protected void clock(final int seconds, boolean ispublish){
+		isClockEnd = false;
 		int clockTime = seconds;
 		clockFiled.setVisible(true);
 		while(clockTime >= 0){
-			if(clockEnd){
+			if(isClockEnd){
 				clockFiled.setVisible(false);
+				if(ispublish && !published){
+					LOG.debug(name + ": 不出");
+				}
 				return;
 			}
 			clockFiled.setText("倒计时:" + clockTime--);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				if(clockEnd){
+				if(isClockEnd){
 					clockFiled.setVisible(false);
+					if(ispublish && !published){
+						LOG.debug(name + ": 不出");
+					}
 					return;
 				}
 			}
 		}
-		clockEnd = true;
+		isClockEnd = true;
 		clockFiled.setVisible(false);
+		if(ispublish && !published){
+			LOG.debug(name + ": 不出");
+		}
 	}
 }

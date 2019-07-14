@@ -17,8 +17,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 import com.poker.player.Player;
-import com.poker.player.PlayerConputer;
-import com.poker.player.PlayerUser;
+import com.poker.player.Conputer;
+import com.poker.player.User;
 
 /**
  * 
@@ -31,13 +31,7 @@ public class Frame extends JFrame {
 
 	public Container container = null;
 
-	private JMenuItem start;
-
-	private JMenuItem exit;
-
-	private JMenuItem about;
-
-	private Player userPlayer;
+	private Player user;
 
 	private Player leftConputer;
 
@@ -53,32 +47,36 @@ public class Frame extends JFrame {
 		container = this.getContentPane();
 		container.setLayout(null);
 		container.setBackground(new Color(0, 112, 26)); 
-		start = new JMenuItem("新游戏");
-		start.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.out.println(1);
-			}
-		});
-		exit = new JMenuItem("退出");
+		
+		JMenu gameMenu = new JMenu("游戏");
+		JMenuItem exit = new JMenuItem("退出");
 		exit.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
 			}
 		});
-		about = new JMenuItem("关于");
+		gameMenu.add(exit);
+		
+		JMenuItem start = new JMenuItem("新游戏");
+		start.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println(1);
+			}
+		});
+		gameMenu.add(start);
+		
+		JMenu helpMenu = new JMenu("帮助");
+		JMenuItem about = new JMenuItem("关于");
 		about.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showAbout();
 			}
 		});
-		JMenu gameMenu = new JMenu("游戏");
-		gameMenu.add(start);
-		gameMenu.add(exit);
-		JMenu helpMenu = new JMenu("帮助");
 		helpMenu.add(about);
+		
 		JMenuBar menu = new JMenuBar();
 		menu.add(gameMenu);
 		menu.add(helpMenu);
@@ -86,29 +84,29 @@ public class Frame extends JFrame {
 	}
 
 	public void play(){
-		userPlayer = new PlayerUser(this,Player.POSITION_USER);
-		leftConputer = new PlayerConputer(this,Player.POSITION_LEFT);
-		rightConputer = new PlayerConputer(this,Player.POSITION_RIGHT);
+		user = new User(this,Player.USER);
+		leftConputer = new Conputer(this,Player.CONPUTER_LEFT);
+		rightConputer = new Conputer(this,Player.CONPUTER_RIGHT);
 		
-		//初始化牌
+		//初始化
 		List<Card> cardList = new LinkedList<Card>();
 		for (int i = 1; i <= 4; i++) {
 			for (int j = 1; j <= 13; j++) {
 				Card card = new Card(i + "-" + j).init();
-				container.add(card.getLabel());
 				cardList.add(card);
+				container.add(card.getLabel());
 			}
 		}
 		Card card1 = new Card("5-1").init();
-		container.add(card1.getLabel());
 		cardList.add(card1);
+		container.add(card1.getLabel());
 		Card card2 = new Card("5-2").init();
-		container.add(card2.getLabel());
 		cardList.add(card2);
+		container.add(card2.getLabel());
 		
 		//洗牌
+		SecureRandom random = new SecureRandom();
 		for(int i = 0;i < 100;i++){
-			SecureRandom random = new SecureRandom();
 			int index = random.nextInt(54);
 			Card card = cardList.get(index);
 			cardList.set(index, cardList.get(0));
@@ -120,31 +118,33 @@ public class Frame extends JFrame {
 		for(int i=0; i<cardList.size(); i++){
 			Card card = cardList.get(i);
 			if(i >= 51){
-				card.asynmove(new Point(300 + (i - 51) * 80, 10),container);
+				card.asynmove(new Point(300 + (i - 51) * 80, 10), container);
 				lordCardList.add(card);
 				continue;
 			}
 			
 			switch ((i)%3) {
 			case 0:
-				card.asynmove(new Point(50, 60 + i * 5),container);
+				card.asynmove(new Point(50, 60 + i * 5), container);
 				leftConputer.getCardHoldList().add(card);
+				card.show(); 
 				break;
 			case 1:
-				card.asynmove(new Point(180 + i * 7, 450),container);
-				userPlayer.getCardHoldList().add(card);
+				card.asynmove(new Point(180 + i * 7, 450), container);
+				user.getCardHoldList().add(card);
 				card.show(); 
 				break;
 			case 2:
-				card.asynmove(new Point(700, 60 + i * 5),container);
+				card.asynmove(new Point(700, 60 + i * 5), container);
 				rightConputer.getCardHoldList().add(card);
+				card.show(); 
 				break;
 			}
 		}
 		
 		//理牌
-		userPlayer.order();
-		userPlayer.resetPosition(false);
+		user.order();
+		user.resetPosition(false);
 		leftConputer.order();
 		leftConputer.resetPosition(false);
 		rightConputer.order();
@@ -157,20 +157,19 @@ public class Frame extends JFrame {
 			player.compete(15);
 			if(player.isLord()){
 				lorder = player;
+				lorder.lordinit(lordCardList);
 				break;
 			}
 		}
 		
-		//地主理牌
-		lorder.lordinit(lordCardList);
-		
 		//从地主开始出牌
 		for(int i = lorder.getPosition(); ;i++){
 			Player player = getPlayer((i % 3));
+			player.setPublished(false);
 			player.publish(15);
 			
 			if(player.getCardHoldList().isEmpty()){
-				if(player.getPosition() == Player.POSITION_USER){ 
+				if(player.getPosition() == Player.USER){ 
 					JOptionPane.showMessageDialog(this, "winner!");
 				}else{
 					JOptionPane.showMessageDialog(this, "losser!");
@@ -182,11 +181,11 @@ public class Frame extends JFrame {
 
 	public Player getPlayer(int position){
 		switch(position){
-		case Player.POSITION_LEFT:
+		case Player.CONPUTER_LEFT:
 			return leftConputer;
-		case Player.POSITION_USER:
-			return userPlayer;
-		case Player.POSITION_RIGHT:
+		case Player.USER:
+			return user;
+		case Player.CONPUTER_RIGHT:
 			return rightConputer;
 		default:
 			return null;

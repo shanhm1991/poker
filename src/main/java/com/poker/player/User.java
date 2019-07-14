@@ -8,17 +8,18 @@ import java.util.List;
 
 import javax.swing.JButton;
 
-import com.poker.frame.Frame;
 import com.poker.frame.Card;
+import com.poker.frame.Frame;
 import com.poker.frame.Type;
-import com.poker.frame.Util;
 
 /**
+ * 
+ * 玩家
  * 
  * @author shanhm1991
  *
  */
-public class PlayerUser extends Player {
+public class User extends Player {
 
 	private JButton competeButton;
 
@@ -27,11 +28,14 @@ public class PlayerUser extends Player {
 	private JButton publishButton;
 
 	private JButton notPublishButton;
-	
-	public PlayerUser(Frame frame,int position) {
+
+	public User(Frame frame,int position) {
 		super(frame,position);
+		name = "玩家";
+
 		lordPoint = new Point(80,430);
 		clockFiled.setBounds(374, 360, 60, 20);
+
 		competeButton = new JButton("抢地主");
 		competeButton.setVisible(false);
 		competeButton.setBounds(320, 400,75,20);
@@ -39,10 +43,11 @@ public class PlayerUser extends Player {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				clockFiled.setText("抢地主");
-				lord = true;
-				clockEnd = true;
+				isLord = true;
+				isClockEnd = true;
 			}
 		});
+
 		notCompeteButton = new JButton("不  抢");
 		notCompeteButton.setVisible(false);
 		notCompeteButton.setBounds(420, 400,75,20);
@@ -50,10 +55,11 @@ public class PlayerUser extends Player {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				clockFiled.setText("不  抢");
-				lord = false;
-				clockEnd = true;
+				isLord = false;
+				isClockEnd = true;
 			}
 		});
+
 		publishButton= new JButton("出牌");
 		publishButton.setVisible(false);
 		publishButton.setBounds(320, 400, 60, 20);
@@ -63,6 +69,7 @@ public class PlayerUser extends Player {
 				confirmPublishCard();
 			}
 		});
+
 		notPublishButton= new JButton("不要");
 		notPublishButton.setVisible(false);
 		notPublishButton.setBounds(420, 400, 60, 20);
@@ -70,16 +77,17 @@ public class PlayerUser extends Player {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				clockFiled.setText("不要");
-				clockEnd = true;
+				isClockEnd = true;
 				published = false;
 			}
 		});
+
 		frame.container.add(competeButton);
 		frame.container.add(notCompeteButton);
 		frame.container.add(publishButton);
 		frame.container.add(notPublishButton);
 	}
-	
+
 	@Override
 	public void lordinit(List<Card> lordCardList){
 		super.lordinit (lordCardList);
@@ -92,26 +100,11 @@ public class PlayerUser extends Player {
 	public void compete(final int seconds) {
 		competeButton.setVisible(true);
 		notCompeteButton.setVisible(true);
-		
-		
-		List<Card> list = cardHoldList;
-		//测试计算出牌
-		new Thread(){
-			public void run(){
-				
-				Util.getT4(list);
-				
-				
-			}
-		}.start();
-		
-		
-		clock(seconds);
-		
+		clock(seconds, false);
 		competeButton.setVisible(false);
 		notCompeteButton.setVisible(false);
 	}
-	
+
 	@Override
 	public void publish(final int seconds){
 		for(Card card : cardPublishList){
@@ -120,11 +113,11 @@ public class PlayerUser extends Player {
 		cardPublishList.clear();
 		publishButton.setVisible(true);
 		notPublishButton.setVisible(true);
-		clock(seconds);
+		clock(seconds, true);
 		publishButton.setVisible(false);
 		notPublishButton.setVisible(false);
 	}
-	
+
 	/*
 	 * list.remove(card)是根据equals来删，会导致误删
 	 * list.remove(index)每次删完都会重新移动数组，影响下一次删除
@@ -140,10 +133,12 @@ public class PlayerUser extends Player {
 				holdList.add(card);
 			}
 		}
-		
-		if(publishList.isEmpty() || !isPublishAble(publishList)){
+
+		Type type = new Type(publishList);
+		if(publishList.isEmpty() || !isPublishAble(publishList, type)){
 			return;
 		}
+
 		Point point=new Point();
 		point.x = (770 / 2) - (publishList.size() + 1) * 15 / 2;;
 		point.y = 300;
@@ -151,19 +146,19 @@ public class PlayerUser extends Player {
 			card.synmove(point);
 			point.x += 15; 
 		}
-		
+
 		cardHoldList = holdList;
 		cardPublishList = publishList;
 		resetPosition(true);
 		clockFiled.setVisible(false);
-		clockEnd = true;
+		isClockEnd = true;
 		published = true;
+		LOG.debug(name + ": 出牌[" + type + "]=" + publishList);
 	}
-	
+
 	//接牌
-	private boolean isPublishAble(List<Card> publishList){
-		Type ownType = new Type(publishList);
-		int ownTypeValue = ownType.type();
+	private boolean isPublishAble(List<Card> publishList, Type ownType){
+		int ownTypeValue = ownType.getType();
 		if(ownTypeValue == Type.T0){
 			return false;
 		}
@@ -179,7 +174,7 @@ public class PlayerUser extends Player {
 			otherPublishCards = nextPlayer.getCardPublishList();
 		}
 		Type otherType = new Type(otherPublishCards);
-		int otherTypeValue = otherType.type();
+		int otherTypeValue = otherType.getType();
 
 		//有炸弹
 		if(ownTypeValue == Type.T4){

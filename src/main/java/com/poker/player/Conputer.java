@@ -3,76 +3,76 @@ package com.poker.player;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.poker.frame.Frame;
 import com.poker.frame.Card;
-import com.poker.player.idea.ThreadCompete;
-import com.poker.player.idea.ThreadPublish;
+import com.poker.frame.Frame;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
  * 
+ * 电脑
+ * 
  * @author shanhm1991
  *
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class PlayerConputer extends Player {
-
-	public PlayerConputer(Frame frame,int position) {
+public class Conputer extends Player {
+	
+	public Conputer(Frame frame,int position) {
 		super(frame,position);
 		switch(position){
-		case POSITION_LEFT:
+		case CONPUTER_LEFT:
 			lordPoint = new Point(80,20);
 			clockFiled.setBounds(140, 230, 60, 20);
+			name = "电脑[左]";
 			break;
-		case POSITION_RIGHT:
+		case CONPUTER_RIGHT:
 			lordPoint = new Point(700,20);
 			clockFiled.setBounds(620, 230, 60, 20);
+			name = "电脑[右]";
 			break;
 		default:;
 		}
 	}
-
+	
 	@Override
 	public void compete(final int seconds) {
-		//计算抢地主线程
-		FutureTask<Boolean> competeThread = new FutureTask<Boolean>(new ThreadCompete(this));
-		new Thread(competeThread).start();
+		FutureTask<Boolean> competeTask = new FutureTask<Boolean>(new CompeteTask());
+		new Thread(competeTask).start();
 		
 		//计时读秒
 		Thread clockThread = new Thread(){
 			@Override
 			public void run() {
-				clock(seconds);
+				clock(seconds, false);
 			}
 		};
 		clockThread.start();
 		
-		//主线程阻塞等待
+		//同步等待
 		try {
-			lord = competeThread.get(seconds,TimeUnit.SECONDS);
+			isLord = competeTask.get(seconds,TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			//主线程忽略中断
+			
 		} catch (ExecutionException e) {
-			//任务异常，强行结束线程
-			competeThread.cancel(true);
-			lord = false;
+			competeTask.cancel(true);
+			isLord = false;
 		} catch (TimeoutException e) {
-			//任务超时，强行结束线程
-			competeThread.cancel(true);
-			lord = false;
+			competeTask.cancel(true);
+			isLord = false;
 		}finally{
 			clockThread.interrupt();
 		}
 
-		if(lord){
+		if(isLord){
 			clockFiled.setText("抢地主");
 			clockFiled.setVisible(true);
 		}else{
@@ -94,13 +94,13 @@ public class PlayerConputer extends Player {
 		}
 		cardPublishList.clear();
 		//计算出牌线程
-		FutureTask<List<Card>> publishThread = new FutureTask<List<Card>>(new ThreadPublish(this));
+		FutureTask<List<Card>> publishThread = new FutureTask<List<Card>>(new PublishThread(this));
 		new Thread(publishThread).start();
 		//时钟线程
 		Thread clockThread = new Thread(){
 			@Override
 			public void run() {
-				clock(seconds);
+				clock(seconds, true);
 			}
 		};
 		clockThread.start();
@@ -161,5 +161,49 @@ public class PlayerConputer extends Player {
 		cardPublishList = publishList;
 		cardHoldList = holdList;
 		resetPosition(false);
+	}
+	
+	
+	/**
+	 * 
+	 * @author shanhm1991
+	 *
+	 */
+	private static class CompeteTask implements Callable<Boolean>{
+		
+		@Override
+		public Boolean call() throws Exception {
+			
+			
+			Thread.sleep(3000);
+
+			
+			return false;
+		}
+
+	}
+	
+	/**
+	 * 
+	 * @author shanhm1991
+	 *
+	 */
+	private class PublishThread implements Callable<List<Card>>{
+
+		private Player conputer;
+
+		public PublishThread(Player conputer) {
+			this.conputer = conputer;
+		}
+
+		@Override
+		public List<Card> call() throws Exception {
+			Thread.sleep(2000);
+
+			conputer.setClockEnd(true);
+
+			return new ArrayList<Card>();
+		}
+
 	}
 }
