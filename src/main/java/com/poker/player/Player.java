@@ -76,6 +76,7 @@ public abstract class Player {
 				return c2.getSingleValue() - c1.getSingleValue();
 			}
 		});
+		LOG.info(name + ": 初始牌=" + cardHoldList);
 	}
 
 	public abstract void compete(final int seconds);
@@ -102,6 +103,7 @@ public abstract class Player {
 		cardHoldList.addAll(lordCardList);
 		order();
 		
+		LOG.info(name + ": 抢地主=" + cardHoldList);
 		if(lorderPosition != USER){
 			for(Card card : lordCardList){
 				card.back();
@@ -154,7 +156,7 @@ public abstract class Player {
 			if(isClockEnd){
 				clockFiled.setVisible(false);
 				if(ispublish && !published){
-					LOG.debug(name + ": 不出");
+					LOG.info(name + ": 不出");
 				}
 				return;
 			}
@@ -165,7 +167,7 @@ public abstract class Player {
 				if(isClockEnd){
 					clockFiled.setVisible(false);
 					if(ispublish && !published){
-						LOG.debug(name + ": 不出");
+						LOG.info(name + ": 不出");
 					}
 					return;
 				}
@@ -174,7 +176,7 @@ public abstract class Player {
 		isClockEnd = true;
 		clockFiled.setVisible(false);
 		if(ispublish && !published){
-			LOG.debug(name + ": 不出");
+			LOG.info(name + ": 不出");
 		}
 	}
 }

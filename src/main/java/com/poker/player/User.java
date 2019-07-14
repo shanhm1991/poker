@@ -153,7 +153,7 @@ public class User extends Player {
 		clockFiled.setVisible(false);
 		isClockEnd = true;
 		published = true;
-		LOG.debug(name + ": 出牌[" + type + "]=" + publishList);
+		LOG.info(name + ": 出牌[" + type + "]=" + publishList);
 	}
 
 	//接牌
