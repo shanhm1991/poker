@@ -1,4 +1,4 @@
-package com.poker.player;
+package org.eto.poker.player;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -12,9 +12,9 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.poker.card.Card;
-import com.poker.card.Type;
-import com.poker.frame.Frame;
+import org.eto.poker.card.Card;
+import org.eto.poker.card.Type;
+import org.eto.poker.frame.Frame;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,7 +29,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Conputer extends Player {
-	
+
 	public Conputer(Frame frame,int position) {
 		super(frame,position);
 		switch(position){
@@ -46,12 +46,12 @@ public class Conputer extends Player {
 		default:;
 		}
 	}
-	
+
 	@Override
 	public void compete(final int seconds) {
 		FutureTask<Boolean> competeTask = new FutureTask<Boolean>(new CompeteTask());
 		new Thread(competeTask).start();
-		
+
 		//计时读秒
 		Thread clockThread = new Thread(){
 			@Override
@@ -60,12 +60,12 @@ public class Conputer extends Player {
 			}
 		};
 		clockThread.start();
-		
+
 		//同步等待
 		try {
 			isLord = competeTask.get(seconds,TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			
+
 		} catch (ExecutionException e) {
 			competeTask.cancel(true);
 			isLord = false;
@@ -167,15 +167,15 @@ public class Conputer extends Player {
 		cardHoldList = holdList;
 		resetPosition(false);
 	}
-	
-	
+
+
 	/**
 	 * 
 	 * @author shanhm1991
 	 *
 	 */
 	private class CompeteTask implements Callable<Boolean>{
-		
+
 		@Override
 		public Boolean call() throws Exception {
 			Type type = new Type(cardHoldList);
@@ -187,7 +187,7 @@ public class Conputer extends Player {
 					return c2.getValue() - c1.getValue();
 				}
 			});
-			
+
 			//找出缺数进行分段, 两个缺数之差如果大于5则可能组成顺子
 			List<Card> lackList = new ArrayList<>();
 			for(int i = 1; i <= 13; i++){
@@ -196,10 +196,10 @@ public class Conputer extends Player {
 					lackList.add(card);
 				}
 			}
-			
+
 			List<Card> singleList = new ArrayList<>();//只能单出的牌
 			ListIterator<Card> it = lackList.listIterator();
-		    int prev = 0;
+			int prev = 0;
 			while(it.hasNext()){
 				Card card = it.next();
 				int next = card.getValue();
@@ -207,7 +207,7 @@ public class Conputer extends Player {
 				if(interval == 0){
 					continue;
 				}
-				
+
 				//连续小于5，且仅有一张的牌只能单出或被三带
 				if(interval <= 5){
 					for(int i = prev + 1;i < next;i++){
@@ -217,38 +217,41 @@ public class Conputer extends Player {
 						}
 					}
 				}else{
-					//获取连续牌的最小手数， 确定是否单出
-					int total  = 0;
-					for(int i = prev + 1;i < next;i++){
-						Card c = new Card("1-" + i);
-						total += type.count(c);
-					}
+					
 				}
 				prev = next;
 			}
-			
+
 			System.out.println(name + "  " + distinctList); 
 			System.out.println(name + "  " + lackList); 
 			System.out.println(name + "  " + singleList); 
-			
-//			int x = type.count(new Card("5-1")); //小王 3分
-//			int y = type.count(new Card("5-2")); //大王 2分
-//			int xx = type.count(new Card("1-2")); //2字 1分
-//			if((3 * x + 2 * y + xx) < 4){
-//				return false;
-//			}
-			
+
+			//			int x = type.count(new Card("5-1")); //小王 3分
+			//			int y = type.count(new Card("5-2")); //大王 2分
+			//			int xx = type.count(new Card("1-2")); //2字 1分
+			//			if((3 * x + 2 * y + xx) < 4){
+			//				return false;
+			//			}
+
 			Thread.sleep(3000); //让秒表走一会儿
 			return false;
 		}
 
-		
-		
-		
-		
-		
 	}
 	
+	//获取连续牌的最小手数， 确定是否单出
+	private void fast(Type type, int prev, int next){
+		//顺子优先
+		for(int i = prev + 1;i < next;i++){
+			Card c = new Card("1-" + i);
+			int count = type.count(c);
+			
+			
+			
+			
+		}
+	}
+
 	/**
 	 * 
 	 * @author shanhm1991

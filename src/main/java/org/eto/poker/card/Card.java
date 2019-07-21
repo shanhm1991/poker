@@ -1,4 +1,4 @@
-package com.poker.card;
+package org.eto.poker.card;
 
 import java.awt.Container;
 import java.awt.Point;

@@ -1,4 +1,4 @@
-package com.poker.player;
+package org.eto.poker.player;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -11,9 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
-
-import com.poker.card.Card;
-import com.poker.frame.Frame;
+import org.eto.poker.card.Card;
+import org.eto.poker.frame.Frame;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

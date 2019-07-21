@@ -1,4 +1,4 @@
-package com.poker.player;
+package org.eto.poker.player;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -8,9 +8,9 @@ import java.util.List;
 
 import javax.swing.JButton;
 
-import com.poker.card.Card;
-import com.poker.card.Type;
-import com.poker.frame.Frame;
+import org.eto.poker.card.Card;
+import org.eto.poker.card.Type;
+import org.eto.poker.frame.Frame;
 
 /**
  * 

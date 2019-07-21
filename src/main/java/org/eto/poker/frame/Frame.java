@@ -1,4 +1,4 @@
-package com.poker.frame;
+package org.eto.poker.frame;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -16,10 +16,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
-import com.poker.player.Player;
-import com.poker.card.Card;
-import com.poker.player.Conputer;
-import com.poker.player.Person;
+import org.eto.poker.card.Card;
+import org.eto.poker.player.Conputer;
+import org.eto.poker.player.Person;
+import org.eto.poker.player.Player;
 
 /**
  * 

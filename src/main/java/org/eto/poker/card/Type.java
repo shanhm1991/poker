@@ -1,4 +1,4 @@
-package com.poker.card;
+package org.eto.poker.card;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,7 +148,6 @@ public class Type {
 			case 4:
 				return Type.T4;
 			}
-			System.out.println("1");
 			return Type.T0;
 		}
 
@@ -288,4 +287,13 @@ public class Type {
 		}
 	}
 	
+	public void solution(){
+		
+		int shoushu = 0;
+		//1.找出炸弹，大小王
+		shoushu += listT4.size();
+		shoushu += count(new Card("5-1"));
+		shoushu += count(new Card("5-2"));
+		
+	}
 }
